@@ -35,7 +35,6 @@
             overflow: hidden;
         }
 
-        /* Mapa de fondo a pantalla completa */
         #map {
             position: absolute;
             top: 0;
@@ -45,7 +44,6 @@
             z-index: 1;
         }
 
-        /* Panel flotante inferior */
         .floating-panel {
             position: absolute;
             bottom: 0;
@@ -88,7 +86,6 @@
             cursor: pointer;
         }
 
-        /* Contenedor de ruta estilo Uber */
         .route-box {
             background: #F8F9FA;
             border: 1px solid var(--border);
@@ -200,10 +197,8 @@
 </head>
 <body>
 
-    <!-- Mapa interactivo de fondo -->
     <div id="map"></div>
 
-    <!-- Panel flotante moderno -->
     <div class="floating-panel">
         <div class="panel-header">
             <h1>🚖 TaxiPerote</h1>
@@ -212,7 +207,6 @@
             </button>
         </div>
 
-        <!-- Inputs de ruta estilo Uber -->
         <div class="route-box">
             <div class="route-input-group">
                 <span class="route-icon">📍</span>
@@ -226,18 +220,14 @@
         </div>
 
         <div class="form-group">
-            <label for="destinoTipo">Comunidad o Zona Destino</label>
+            <label for="destinoTipo">Comunidad o Zona Destino (Referencia)</label>
             <select id="destinoTipo" onchange="calcularTarifa()">
-                <optgroup label="Zona Urbana Perote">
-                    <option value="Destino en Perote (Local)">Destino Local Estándar ($40)</option>
-                    <option value="Hospital o Zona Periférica">Hospital / Zona Periférica ($50)</option>
-                </optgroup>
-                <optgroup label="Comunidades y Alrededores">
-                    <option value="Totalco">Totalco ($150)</option>
-                    <option value="Sierra de Agua">Sierra de Agua ($90)</option>
-                    <option value="Tenextepec">Tenextepec ($80)</option>
-                    <option value="Los Molinos">Los Molinos ($100)</option>
-                </optgroup>
+                <option value="Local">Destino Local Estándar ($40)</option>
+                <option value="Hospital">Hospital / Zona Periférica ($50)</option>
+                <option value="Tenextepec">Tenextepec ($80)</option>
+                <option value="Sierra de Agua">Sierra de Agua ($90)</option>
+                <option value="Los Molinos">Los Molinos ($100)</option>
+                <option value="Totalco">Totalco ($150)</option>
             </select>
         </div>
 
@@ -286,19 +276,35 @@
             const destinoTipo = document.getElementById('destinoTipo').value;
             const dirOrigen = document.getElementById('direccionOrigen').value.trim();
             const dirDestino = document.getElementById('direccionDestino').value.trim();
+            const textoDestinoLower = (dirDestino + " " + destinoTipo).toLowerCase();
 
-            let tarifa = 40;
-            if (destinoTipo.includes('Totalco')) tarifa = 150;
-            else if (destinoTipo.includes('Sierra de Agua')) tarifa = 90;
-            else if (destinoTipo.includes('Tenextepec')) tarifa = 80;
-            else if (destinoTipo.includes('Los Molinos')) tarifa = 100;
-            else if (destinoTipo.includes('Hospital')) tarifa = 50;
+            let tarifa = 40; // Tarifa base local
+
+            // Detección inteligente de tarifas basada en texto o selección
+            if (textoDestinoLower.includes('totalco')) {
+                tarifa = 150;
+            } else if (textoDestinoLower.includes('sierra de agua') || textoDestinoLower.includes('sierra')) {
+                tarifa = 90;
+            } else if (textoDestinoLower.includes('tenextepec')) {
+                tarifa = 80;
+            } else if (textoDestinoLower.includes('los molinos') || textoDestinoLower.includes('molinos')) {
+                tarifa = 100;
+            } else if (textoDestinoLower.includes('hospital') || destinoTipo === 'Hospital') {
+                tarifa = 50;
+            } else if (destinoTipo === 'Tenextepec') {
+                tarifa = 80;
+            } else if (destinoTipo === 'Sierra de Agua') {
+                tarifa = 90;
+            } else if (destinoTipo === 'Los Molinos') {
+                tarifa = 100;
+            } else if (destinoTipo === 'Totalco') {
+                tarifa = 150;
+            }
 
             document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
 
             let origenFinal = dirOrigen !== "" ? dirOrigen : "Centro de Perote (Sin especificar)";
-            let destinoFinal = `${destinoTipo}`;
-            if (dirDestino !== "") destinoFinal += ` (${dirDestino})`;
+            let destinoFinal = dirDestino !== "" ? dirDestino : `Zona: ${destinoTipo}`;
 
             const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origenFinal}%0A🏁 Destino: ${destinoFinal}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
             const numeroWhatsApp = "522821073249";
