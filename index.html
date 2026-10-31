@@ -17,6 +17,7 @@
             --text: #FFFFFF;
             --text-secondary: #8E8E93;
             --border: #38383A;
+            --suggestion-bg: #3A3A3C;
         }
 
         * {
@@ -84,33 +85,79 @@
             cursor: pointer;
         }
 
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px 14px;
+        .route-box {
             background: #1C1C1E;
             border: 1px solid var(--border);
-            border-radius: 12px;
-            color: #FFF;
-            font-size: 0.95rem;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .route-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .route-icon {
+            font-size: 1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .route-input-group input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            color: var(--text);
             outline: none;
         }
 
-        input:focus, select:focus {
-            border-color: var(--gps-btn);
+        .route-input-group input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .route-divider {
+            height: 1px;
+            background-color: var(--border);
+            margin-left: 36px;
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--suggestion-bg);
+            border-radius: 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 100;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            color: #FFF;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .fare-box {
@@ -121,7 +168,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 16px 0;
+            margin-bottom: 16px;
         }
 
         .fare-box span {
@@ -171,40 +218,22 @@
             </button>
         </div>
 
-        <div class="form-group">
-            <label>📍 Dirección o Referencia de Recogida</label>
-            <input type="text" id="origen" placeholder="Ej: Calle, número o lugar de espera...">
-        </div>
-
-        <div class="form-group">
-            <label>🏁 Ruta o Destino del Viaje</label>
-            <select id="destinoSelect" onchange="calcularTarifa()">
-                <optgroup label="Servicios Locales en Perote">
-                    <option value="Perote Urbano / Centro ($40)">Perote Urbano / Centro ($40 MXN)</option>
-                    <option value="Hospital o Zona Periférica ($50)">Hospital / Zona Periférica ($50 MXN)</option>
-                </optgroup>
-                <optgroup label="Salida desde Perote hacia Comunidades">
-                    <option value="Perote ➔ Tenextepec ($80)">Perote ➔ Tenextepec ($80 MXN)</option>
-                    <option value="Perote ➔ Sierra de Agua ($90)">Perote ➔ Sierra de Agua ($90 MXN)</option>
-                    <option value="Perote ➔ Los Molinos ($100)">Perote ➔ Los Molinos ($100 MXN)</option>
-                    <option value="Perote ➔ Totalco ($150)">Perote ➔ Totalco ($150 MXN)</option>
-                </optgroup>
-                <optgroup label="Servicio Especial (Desde Comunidad a Perote - Incluye traslado de base)">
-                    <option value="Totalco a Perote - Taxi desde Base ($250)">Totalco ➔ Perote (Taxi va por ti) ($250 MXN)</option>
-                    <option value="Los Molinos a Perote - Taxi desde Base ($180)">Los Molinos ➔ Perote (Taxi va por ti) ($180 MXN)</option>
-                    <option value="Sierra de Agua a Perote - Taxi desde Base ($160)">Sierra de Agua ➔ Perote (Taxi va por ti) ($160 MXN)</option>
-                    <option value="Tenextepec a Perote - Taxi desde Base ($140)">Tenextepec ➔ Perote (Taxi va por ti) ($140 MXN)</option>
-                </optgroup>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>🏠 Referencias adicionales (Opcional)</label>
-            <input type="text" id="referenciaDestino" placeholder="Ej: Cerca de la iglesia, número de casa...">
+        <div class="route-box">
+            <div class="route-input-group">
+                <span class="route-icon">📍</span>
+                <input type="text" id="origen" placeholder="¿Dónde estás? (GPS o calle)" oninput="manejarInputOrigen()">
+                <div id="sugerenciasOrigen" class="suggestions-list"></div>
+            </div>
+            <div class="route-divider"></div>
+            <div class="route-input-group">
+                <span class="route-icon">🏁</span>
+                <input type="text" id="destino" placeholder="¿A dónde vas? (Destino o comunidad)" oninput="manejarInputDestino()">
+                <div id="sugerenciasDestino" class="suggestions-list"></div>
+            </div>
         </div>
 
         <div class="fare-box">
-            <span>Tarifa Estimada</span>
+            <span>Tarifa Estimada (Incluye traslado de base)</span>
             <strong id="precioDisplay">$40 MXN</strong>
         </div>
 
@@ -224,6 +253,17 @@
         let marker = L.marker([19.5694, -97.2472]).addTo(map)
             .bindPopup('<b>TaxiPerote Base</b>').openPopup();
 
+        const lugaresPerote = [
+            "Centro de Perote, Parque Juárez",
+            "Terminal de Autobuses Perote",
+            "Hospital General Perote",
+            "Fortaleza de San Carlos",
+            "Totalco",
+            "Sierra de Agua",
+            "Tenextepec",
+            "Los Molinos"
+        ];
+
         function obtenerUbicacionGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
@@ -234,7 +274,8 @@
                     marker.setLatLng([lat, lon])
                           .bindPopup('<b>¡Ubicación GPS obtenida!</b>').openPopup();
 
-                    document.getElementById('origen').value = `GPS Coordenadas: (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+                    document.getElementById('origen').value = `Totalco (GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+                    calcularTarifa();
                 }, () => {
                     alert('No se pudo obtener la ubicación GPS. Escribe tu dirección manual.');
                 }, { enableHighAccuracy: true });
@@ -243,54 +284,115 @@
             }
         }
 
-        function calcularTarifa() {
-            const destino = document.getElementById('destinoSelect').value;
-            let tarifa = 40;
+        function manejarInputOrigen() {
+            const val = document.getElementById('origen').value.toLowerCase();
+            const contenedor = document.getElementById('sugerenciasOrigen');
+            contenedor.innerHTML = '';
+            
+            if (val.length < 1) {
+                contenedor.style.display = 'none';
+                calcularTarifa();
+                return;
+            }
 
-            if (destino.includes('($250)')) tarifa = 250;
-            else if (destino.includes('($180)')) tarifa = 180;
-            else if (destino.includes('($160)')) tarifa = 160;
-            else if (destino.includes('($140)')) tarifa = 140;
-            else if (destino.includes('($150)')) tarifa = 150;
-            else if (destino.includes('($100)')) tarifa = 100;
-            else if (destino.includes('($90)')) tarifa = 90;
-            else if (destino.includes('($80)')) tarifa = 80;
-            else if (destino.includes('($50)')) tarifa = 50;
-            else tarifa = 40;
+            const filtrados = lugaresPerote.filter(l => l.toLowerCase().includes(val));
+            if (filtrados.length > 0) {
+                contenedor.style.display = 'block';
+                filtrados.forEach(lugar => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = lugar;
+                    div.onclick = () => {
+                        document.getElementById('origen').value = lugar;
+                        contenedor.style.display = 'none';
+                        calcularTarifa();
+                    };
+                    contenedor.appendChild(div);
+                });
+            } else {
+                contenedor.style.display = 'none';
+            }
+            calcularTarifa();
+        }
+
+        function manejarInputDestino() {
+            const val = document.getElementById('destino').value.toLowerCase();
+            const contenedor = document.getElementById('sugerenciasDestino');
+            contenedor.innerHTML = '';
+            
+            if (val.length < 1) {
+                contenedor.style.display = 'none';
+                calcularTarifa();
+                return;
+            }
+
+            const filtrados = lugaresPerote.filter(l => l.toLowerCase().includes(val));
+            if (filtrados.length > 0) {
+                contenedor.style.display = 'block';
+                filtrados.forEach(lugar => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = lugar;
+                    div.onclick = () => {
+                        document.getElementById('destino').value = lugar;
+                        contenedor.style.display = 'none';
+                        calcularTarifa();
+                    };
+                    contenedor.appendChild(div);
+                });
+            } else {
+                contenedor.style.display = 'none';
+            }
+            calcularTarifa();
+        }
+
+        function calcularTarifa() {
+            const origenTexto = document.getElementById('origen').value.trim().toLowerCase();
+            const destinoTexto = document.getElementById('destino').value.trim().toLowerCase();
+            const textoCompleto = origenTexto + " " + destinoTexto;
+
+            let tarifa = 40; // Tarifa local base
+
+            // Si el servicio involucra Totalco (salida o llegada desde la base en Perote)
+            if (textoCompleto.includes('totalco')) {
+                tarifa = 250; // Tarifa justa que cubre el traslado del taxi desde la base en Perote
+            } else if (textoCompleto.includes('los molinos') || textoCompleto.includes('molinos')) {
+                tarifa = 180;
+            } else if (textoCompleto.includes('sierra de agua') || textoCompleto.includes('sierra')) {
+                tarifa = 160;
+            } else if (textoCompleto.includes('tenextepec')) {
+                tarifa = 140;
+            } else if (textoCompleto.includes('hospital') || textoCompleto.includes('periférica')) {
+                tarifa = 50;
+            } else {
+                tarifa = 40;
+            }
 
             document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
             return tarifa;
         }
 
         function enviarWhatsApp() {
-            const origen = document.getElementById('origen').value.trim() || "No especificado (Usar GPS del cliente)";
-            const destinoSelectText = document.getElementById('destinoSelect').value;
-            const refDestino = document.getElementById('referenciaDestino').value.trim();
+            const origen = document.getElementById('origen').value.trim() || "No especificado";
+            const destino = document.getElementById('destino').value.trim() || "No especificado";
             const tarifa = calcularTarifa();
-
-            let destinoFinal = destinoSelectText;
-            if (refDestino !== "") {
-                destinoFinal += ` (${refDestino})`;
-            }
 
             // Sincronización automática con la central
             const nuevoServicio = {
                 origen: origen,
-                destino: destinoFinal,
+                destino: destino,
                 tarifa: `$${tarifa} MXN`,
                 tiempo: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             localStorage.setItem('taxiPeroteUltimoServicio', JSON.stringify(nuevoServicio));
 
-            // Mensaje para WhatsApp de la central
-            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Ruta/Destino: ${destinoFinal}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
+            // Mensaje para la central de WhatsApp
+            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Destino: ${destino}%0A💰 Tarifa Cotizada: $${tarifa} MXN (Incluye traslado desde base)`;
             const numeroWhatsApp = "522821073249";
             
             const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
             window.open(url, '_blank');
         }
-
-        calcularTarifa();
     </script>
 </body>
 </html>
