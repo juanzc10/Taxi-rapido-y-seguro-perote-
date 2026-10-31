@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Central TaxiPerote · Panel de Despacho</title>
+<style>
+  :root {
+    --primary: #0B3D91;
+    --whatsapp: #25D366;
+    --driver-btn: #EA580C;
+    --bg: #F1F5F9;
+    --card: #FFFFFF;
+    --text: #0F172A;
+    --muted: #64748B;
+    --border: #E2E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 40px;
+  }
+  header {
+    background: #0F172A;
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { font-size: 1.15rem; }
+  .btn-small-header {
+    background: #334155;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .container { max-width: 500px; margin: 0 auto; padding: 12px; }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .trip-banner {
+    background: #EFF6FF;
+    border: 1.5px solid #93C5FD;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .trip-banner h3 {
+    font-size: 0.85rem;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .trip-row { font-size: 0.9rem; margin-bottom: 4px; }
+  label {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+  }
+  .eta-chips { display: flex; gap: 8px; margin-bottom: 12px; }
+  .eta-chip {
+    flex: 1;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: #F8FAFC;
+  }
+  .eta-chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .driver-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: white;
+    cursor: pointer;
+  }
+  .driver-card.selected {
+    border-color: var(--primary);
+    background: #EFF6FF;
+  }
+  .driver-meta strong { font-size: 0.95rem; display: block; }
+  .driver-meta span { font-size: 0.8rem; color: var(--muted); }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-top: 4px;
+  }
+  .badge.free { background: #DCFCE7; color: #166534; }
+  .badge.busy { background: #FEE2E2; color: #991B1B; }
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    margin-top: 8px;
+  }
+  .btn-driver { background: var(--driver-btn); color: white; }
+  .btn-wa { background: var(--whatsapp); color: white; }
+  .btn-primary { background: var(--primary); color: white; }
+  .preview {
+    background: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 12px;
+    white-space: pre-line;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📡 Central TaxiPerote</h1>
+  <button class="btn-small-header" id="toggleFleetBtn">⚙️ Gestionar Flota</button>
+</header>
+
+<div class="container">
+  <!-- Datos cargados desde el Link Mágico -->
+  <div class="trip-banner" id="tripBanner">
+    <h3>📥 Solicitud de Viaje Activa</h3>
+    <div class="trip-row">👤 <b>Cliente:</b> <span id="tClient">Sin especificar</span></div>
+    <div class="trip-row">🟢 <b>Recogida:</b> <span id="tOrigin">--</span></div>
+    <div class="trip-row" id="tRefRow" style="display:none;">📌 <b>Ref:</b> <span id="tRef"></span></div>
+    <div class="trip-row">🏁 <b>Destino:</b> <span id="tDest">--</span></div>
+    <div class="trip-row">💰 <b>Tarifa cotizada:</b> <span id="tPrice" style="color:#166534; font-weight:800;">$--</span></div>
+  </div>
+
+  <!-- Gestor de Flota (Oculto por defecto) -->
+  <div class="card" id="fleetManager" style="display:none; border:2px solid #0F172A;">
+    <label>➕ Agregar o Actualizar Unidad</label>
+    <input type="number" id="fId" placeholder="Número económico (Ej. 105)">
+    <input type="text" id="fName" placeholder="Nombre del chofer (Ej. Miguel Hernández)">
+    <input type="text" id="fCar" placeholder="Vehículo / Color (Ej. Nissan Versa Oficial)">
+    <input type="text" id="fPlate" placeholder="Placas (Ej. A-452-XEN)">
+    <input type="tel" id="fPhone" placeholder="WhatsApp del chofer a 10 dígitos (Ej. 2821002030)">
+    <button class="btn btn-primary" id="saveTaxiBtn">💾 Guardar Taxi en el Celular</button>
+  </div>
+
+  <div class="card">
+    <label>1. Tiempo estimado de llegada</label>
+    <div class="eta-chips">
+      <div class="eta-chip" data-eta="3 a 5 min">⚡ 3-5 min</div>
+      <div class="eta-chip active" data-eta="5 a 8 min">🚕 5-8 min</div>
+      <div class="eta-chip" data-eta="10 a 15 min">🛣️ 10-15 min</div>
+    </div>
+
+    <label>2. Toca la unidad para asignar</label>
+    <div id="taxiList"></div>
+  </div>
+
+  <!-- Acciones de Despacho en 2 Pasos -->
+  <div class="card" id="dispatchActions" style="display:none;">
+    <label style="color:#EA580C;">Paso 1: Mandar carrera al Taxista</label>
+    <div class="preview" id="driverMsgPreview"></div>
+    <a class="btn btn-driver" id="sendToDriverBtn" href="#" target="_blank">
+      📲 1. Enviar carrera al WhatsApp del Chofer
+    </a>
+
+    <hr style="margin:18px 0; border:none; border-top:1.5px dashed #CBD5E1;">
+
+    <label style="color:#166534;">Paso 2: Confirmar datos al Cliente</label>
+    <div class="preview" id="clientMsgPreview"></div>
+    <button class="btn btn-primary" id="copyClientBtn">
+      📋 2. Copiar confirmación para el Cliente
+    </button>
+    <input type="tel" id="clientPhone" placeholder="Opcional: WhatsApp del cliente (10 dígitos)" style="margin-top:10px; margin-bottom:0;">
+    <a class="btn btn-wa" id="sendToClientBtn" href="#" target="_blank" style="display:none;">
+      📲 Enviar directo al WhatsApp del Cliente
+    </a>
+  </div>
+</div>
+
+<script>
+const DEFAULT_TAXIS = [
+  { id: 101, name: "Miguel Hernández", car: "Nissan Versa Oficial", plate: "A-452-XEN", phone: "2821073249", status: "Disponible" },
+  { id: 145, name: "Carlos Ramírez", car: "Nissan Tsuru Oficial", plate: "A-118-XEN", phone: "2821073249", status: "Disponible" },
+  { id: 208, name: "Ana López", car: "Chevrolet Aveo", plate: "A-789-XEN", phone: "2821073249", status: "Disponible" },
+  { id: 312, name: "Roberto García", car: "Nissan March", plate: "A-334-XEN", phone: "2821073249", status: "Disponible" }
+];
+
+let taxis = JSON.parse(localStorage.getItem('taxiperote_fleet')) || DEFAULT_TAXIS;
+function saveFleet() { localStorage.setItem('taxiperote_fleet', JSON.stringify(taxis)); }
+
+// Leer parámetros del Link Mágico
+const params = new URLSearchParams(window.location.search);
+const trip = {
+  client: params.get('c') || 'Cliente',
+  origin: params.get('o') || 'Centro de Perote',
+  dest: params.get('d') || 'Destino en Perote',
+  ref: params.get('r') || '',
+  price: params.get('p') || '40',
+  lat: params.get('lat') || '',
+  lon: params.get('lon') || ''
+};
+
+document.getElementById('tClient').textContent = trip.client;
+document.getElementById('tOrigin').textContent = trip.origin;
+document.getElementById('tDest').textContent = trip.dest;
+document.getElementById('tPrice').textContent = `$${trip.price} MXN`;
+if (trip.ref) {
+  document.getElementById('tRefRow').style.display = 'block';
+  document.getElementById('tRef').textContent = trip.ref;
+}
+
+let selectedTaxi = null;
+let selectedEta = "5 a 8 min";
+
+document.querySelectorAll('.eta-chip').forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll('.eta-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    selectedEta = chip.dataset.eta;
+    if (selectedTaxi) buildMessages();
+  };
+});
+
+document.getElementById('toggleFleetBtn').onclick = () => {
+  const fm = document.getElementById('fleetManager');
+  fm.style.display = fm.style.display === 'none' ? 'block' : 'none';
+};
+
+document.getElementById('saveTaxiBtn').onclick = () => {
+  const id = parseInt(document.getElementById('fId').value);
+  const name = document.getElementById('fName').value.trim();
+  const car = document.getElementById('fCar').value.trim();
+  const plate = document.getElementById('fPlate').value.trim();
+  const phone = document.getElementById('fPhone').value.replace(/\D/g, '');
+  if (!id || !name || !car || !plate) { alert('Completa los datos de la unidad.'); return; }
+
+  const existingIndex = taxis.findIndex(t => t.id === id);
+  const newObj = { id, name, car, plate, phone: phone || '2821073249', status: 'Disponible' };
+  if (existingIndex >= 0) taxis[existingIndex] = newObj;
+  else taxis.push(newObj);
+
+  saveFleet();
+  renderTaxis();
+  document.getElementById('fleetManager').style.display = 'none';
+};
+
+function renderTaxis() {
+  const container = document.getElementById('taxiList');
+  container.innerHTML = taxis.map(t => `
+    <div class="driver-card ${selectedTaxi && selectedTaxi.id === t.id ? 'selected' : ''}" data-id="${t.id}">
+      <div class="driver-meta">
+        <strong>🚕 Unidad #${t.id} · ${t.name}</strong>
+        <span>${t.car} · Placas: <b>${t.plate}</b></span><br>
+        <span class="badge ${t.status === 'Disponible' ? 'free' : 'busy'}" data-toggle="${t.id}">
+          ● ${t.status} (Toca para cambiar)
+        </span>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-small-header" data-del="${t.id}" style="background:#FEE2E2; color:#991B1B;">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.driver-card').forEach(card => {
+    card.onclick = (e) => {
+      if (e.target.dataset.toggle || e.target.dataset.del) return;
+      const id = parseInt(card.dataset.id);
+      selectedTaxi = taxis.find(x => x.id === id);
+      renderTaxis();
+      buildMessages();
+    };
+  });
+
+  document.querySelectorAll('[data-toggle]').forEach(badge => {
+    badge.onclick = (e) => {
+      e.stopPropagation();
+      const t = taxis.find(x => x.id === parseInt(badge.dataset.toggle));
+      if (t) { t.status = t.status === 'Disponible' ? 'Ocupado' : 'Disponible'; saveFleet(); renderTaxis(); }
+    };
+  });
+
+  document.querySelectorAll('[data-del]').forEach(delBtn => {
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('¿Eliminar esta unidad de la lista?')) {
+        taxis = taxis.filter(x => x.id !== parseInt(delBtn.dataset.del));
+        saveFleet();
+        renderTaxis();
+      }
+    };
+  });
+}
+
+function buildMessages() {
+  if (!selectedTaxi) return;
+  const gmapsLink = trip.lat && trip.lon
+    ? `\n📍 *Mapa GPS recogida:*\nhttps://www.google.com/maps/search/?api=1&query=${trip.lat},${trip.lon}`
+    : '';
+
+  // 1. Mensaje para el chofer
+  const driverMsg = `🚨 *CARRERA ASIGNADA - UNIDAD #${selectedTaxi.id}*\n\n👤 *Pasajero:* ${trip.client}\n🟢 *Recoger en:* ${trip.origin}${trip.ref ? '\n📌 *Referencia:* ' + trip.ref : ''}\n🏁 *Va para:* ${trip.dest}\n💰 *Cobrar:* $${trip.price} MXN${gmapsLink}\n\nConfirma de enterado.`;
+
+  document.getElementById('driverMsgPreview').textContent = driverMsg;
+  const driverPhone = selectedTaxi.phone.startsWith('52') ? selectedTaxi.phone : `52${selectedTaxi.phone}`;
+  document.getElementById('sendToDriverBtn').href = `https://wa.me/${driverPhone}?text=${encodeURIComponent(driverMsg)}`;
+
+  // 2. Mensaje para el cliente
+  const clientMsg = `✅ *TAXI ASIGNADO - TAXIPEROTE*\n\n🔢 *Unidad Económico:* #${selectedTaxi.id}\n👨🏻‍✈️ *Conductor:* ${selectedTaxi.name}\n🚗 *Vehículo:* ${selectedTaxi.car}\n🔖 *Placas:* ${selectedTaxi.plate}\n\n⏱️ *Tiempo estimado:* ${selectedEta}\n💰 *Tarifa acordada:* $${trip.price} MXN\n\nTu taxi ya va en camino. ¡Buen viaje!`;
+
+  document.getElementById('clientMsgPreview').textContent = clientMsg;
+  document.getElementById('dispatchActions').style.display = 'block';
+  document.getElementById('dispatchActions').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('copyClientBtn').onclick = () => {
+  navigator.clipboard.writeText(document.getElementById('clientMsgPreview').textContent).then(() => {
+    const btn = document.getElementById('copyClientBtn');
+    btn.textContent = '✅ ¡Copiado! Regresa al WhatsApp y pégalo';
+    setTimeout(() => { btn.textContent = '📋 2. Copiar confirmación para el Cliente'; }, 2500);
+  });
+};
+
+document.getElementById('clientPhone').addEventListener('input', (e) => {
+  const raw = e.target.value.replace(/\D/g, '');
+  const btn = document.getElementById('sendToClientBtn');
+  if (raw.length >= 10 && selectedTaxi) {
+    const full = raw.startsWith('52') ? raw : `52${raw}`;
+    btn.href = `https://wa.me/${full}?text=${encodeURIComponent(document.getElementById('clientMsgPreview').textContent)}`;
+    btn.style.display = 'flex';
+  } else {
+    btn.style.display = 'none';
+  }
+});
+
+renderTaxis();
+</script>
+</body>
+</html>
