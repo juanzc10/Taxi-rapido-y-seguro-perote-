@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0B3D91">
+    <title>TaxiPerote · Pide tu taxi</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary: #0B3D91;
+            --whatsapp: #25D366;
+            --whatsapp-dark: #1EBE57;
+            --gps-btn: #007AFF;
+            --bg: #F2F2F7;
+            --card: #FFFFFF;
+            --text: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --border: #E5E5EA;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Mapa de fondo a pantalla completa */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Panel flotante inferior */
+        .floating-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 20px 16px 30px 16px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .panel-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .btn-gps {
+            background-color: #E8F4FD;
+            color: var(--gps-btn);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        /* Contenedor de ruta estilo Uber */
+        .route-box {
+            background: #F8F9FA;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .route-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .route-icon {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .route-input-group input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+            padding: 6px 0;
+        }
+
+        .route-divider {
+            height: 1px;
+            background-color: var(--border);
+            margin-left: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: #F8F9FA;
+            color: var(--text);
+            outline: none;
+        }
+
+        .fare-box {
+            background: #F2F8FF;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 14px 0;
+        }
+
+        .fare-box span {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .fare-box strong {
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .btn-whatsapp {
+            background-color: var(--whatsapp);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: var(--whatsapp-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mapa interactivo de fondo -->
+    <div id="map"></div>
+
+    <!-- Panel flotante moderno -->
+    <div class="floating-panel">
+        <div class="panel-header">
+            <h1>🚖 TaxiPerote</h1>
+            <button type="button" class="btn-gps" onclick="obtenerUbicacionGPS()">
+                🛰️ Usar GPS
+            </button>
+        </div>
+
+        <!-- Inputs de ruta estilo Uber -->
+        <div class="route-box">
+            <div class="route-input-group">
+                <span class="route-icon">📍</span>
+                <input type="text" id="direccionOrigen" placeholder="Calle, número o referencias de recogida..." oninput="calcularTarifa()">
+            </div>
+            <div class="route-divider"></div>
+            <div class="route-input-group">
+                <span class="route-icon">🏁</span>
+                <input type="text" id="direccionDestino" placeholder="¿A dónde vas? (Destino o calle)..." oninput="calcularTarifa()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="destinoTipo">Comunidad o Zona Destino</label>
+            <select id="destinoTipo" onchange="calcularTarifa()">
+                <optgroup label="Zona Urbana Perote">
+                    <option value="Destino en Perote (Local)">Destino Local Estándar ($40)</option>
+                    <option value="Hospital o Zona Periférica">Hospital / Zona Periférica ($50)</option>
+                </optgroup>
+                <optgroup label="Comunidades y Alrededores">
+                    <option value="Totalco">Totalco ($150)</option>
+                    <option value="Sierra de Agua">Sierra de Agua ($90)</option>
+                    <option value="Tenextepec">Tenextepec ($80)</option>
+                    <option value="Los Molinos">Los Molinos ($100)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="fare-box">
+            <span>Tarifa Estimada</span>
+            <strong id="precioDisplay">$40 MXN</strong>
+        </div>
+
+        <a id="btnEnviar" href="#" target="_blank" class="btn-whatsapp">
+            💬 Pedir Taxi por WhatsApp
+        </a>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', {zoomControl: false}).setView([19.5694, -97.2472], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let marker = L.marker([19.5694, -97.2472]).addTo(map)
+            .bindPopup('<b>TaxiPerote Base</b>').openPopup();
+
+        function obtenerUbicacionGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    map.setView([lat, lon], 16);
+                    marker.setLatLng([lat, lon])
+                          .bindPopup('<b>¡Tu ubicación GPS!</b>').openPopup();
+
+                    document.getElementById('direccionOrigen').value = `GPS Coordenadas: (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+                    calcularTarifa();
+                }, () => {
+                    alert('No se pudo obtener la ubicación GPS. Escribe tu dirección manual.');
+                }, { enableHighAccuracy: true });
+            } else {
+                alert('Tu dispositivo no soporta geolocalización.');
+            }
+        }
+
+        function calcularTarifa() {
+            const destinoTipo = document.getElementById('destinoTipo').value;
+            const dirOrigen = document.getElementById('direccionOrigen').value.trim();
+            const dirDestino = document.getElementById('direccionDestino').value.trim();
+
+            let tarifa = 40;
+            if (destinoTipo.includes('Totalco')) tarifa = 150;
+            else if (destinoTipo.includes('Sierra de Agua')) tarifa = 90;
+            else if (destinoTipo.includes('Tenextepec')) tarifa = 80;
+            else if (destinoTipo.includes('Los Molinos')) tarifa = 100;
+            else if (destinoTipo.includes('Hospital')) tarifa = 50;
+
+            document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
+
+            let origenFinal = dirOrigen !== "" ? dirOrigen : "Centro de Perote (Sin especificar)";
+            let destinoFinal = `${destinoTipo}`;
+            if (dirDestino !== "") destinoFinal += ` (${dirDestino})`;
+
+            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origenFinal}%0A🏁 Destino: ${destinoFinal}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
+            const numeroWhatsApp = "522821073249";
+            document.getElementById('btnEnviar').href = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+        }
+
+        calcularTarifa();
+    </script>
+</body>
+</html>
