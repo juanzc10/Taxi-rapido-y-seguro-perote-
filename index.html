@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0B3D91">
+    <meta name="theme-color" content="#1C1C1E">
     <title>TaxiPerote · Pide tu taxi</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -11,7 +11,7 @@
             --primary: #0B3D91;
             --whatsapp: #25D366;
             --whatsapp-dark: #1EBE57;
-            --gps-btn: #007AFF;
+            --gps-btn: #0A84FF;
             --bg: #1C1C1E;
             --card: #2C2C2E;
             --text: #FFFFFF;
@@ -53,7 +53,7 @@
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
             padding: 24px 16px 32px 16px;
-            box-shadow: 0 -8px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 -8px 25px rgba(0,0,0,0.5);
             z-index: 10;
         }
 
@@ -71,7 +71,7 @@
         }
 
         .btn-gps {
-            background-color: rgba(0, 122, 255, 0.2);
+            background-color: rgba(10, 132, 255, 0.15);
             color: var(--gps-btn);
             border: none;
             padding: 8px 14px;
@@ -84,7 +84,6 @@
             cursor: pointer;
         }
 
-        /* Contenedor de ruta estilo Uber oscuro */
         .route-box {
             background: #1C1C1E;
             border: 1px solid var(--border);
@@ -181,7 +180,7 @@
         <div class="panel-header">
             <h1>🚖 TaxiPerote</h1>
             <button type="button" class="btn-gps" onclick="obtenerUbicacionGPS()">
-                🛰️ Usar mi GPS
+                🛰️ Usar GPS
             </button>
         </div>
 
@@ -244,7 +243,7 @@
 
             let tarifa = 40; // Tarifa base local estándar en Perote
 
-            // Motor de cálculo inteligente de tarifas basado en el destino escrito
+            // Motor de cálculo inteligente de tarifas según el destino escrito
             if (destinoTexto.includes('totalco')) {
                 tarifa = 150;
             } else if (destinoTexto.includes('sierra de agua') || destinoTexto.includes('sierra')) {
@@ -255,10 +254,8 @@
                 tarifa = 100;
             } else if (destinoTexto.includes('hospital')) {
                 tarifa = 50;
-            } else if (destinoTexto === "") {
-                tarifa = 40;
             } else {
-                tarifa = 40; // Por defecto local urbano en Perote
+                tarifa = 40; // Urbano local estándar
             }
 
             document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
