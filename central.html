@@ -373,6 +373,18 @@ document.getElementById('clientPhone').addEventListener('input', (e) => {
     btn.style.display = 'none';
   }
 });
+    // Sincronizar automáticamente el pedido del cliente
+    const servicioGuardado = localStorage.getItem('taxiPeroteUltimoServicio');
+    if (servicioGuardado) {
+        const datos = JSON.parse(servicioGuardado);
+        const elRecogida = document.getElementById('recogidaActiva') || document.querySelector('.recogida-texto');
+        const elDestino = document.getElementById('destinoActivo') || document.querySelector('.destino-texto');
+        const elTarifa = document.getElementById('tarifaActiva') || document.querySelector('.tarifa-texto');
+
+        if (elRecogida) elRecogida.innerText = datos.origen;
+        if (elDestino) elDestino.innerText = datos.destino;
+        if (elTarifa) elTarifa.innerText = datos.tarifa;
+    }
 
 renderTaxis();
 </script>
