@@ -192,7 +192,7 @@
             <div class="route-divider"></div>
             <div class="route-input-group">
                 <span class="route-icon">🏁</span>
-                <input type="text" id="destino" placeholder="¿A dónde vas? (Destino o comunidad)" oninput="calcularTarifa()">
+                <input type="text" id="destino" placeholder="¿A dónde vas? (Destino, colonia o comunidad)" oninput="calcularTarifa()">
             </div>
         </div>
 
@@ -201,9 +201,9 @@
             <strong id="precioDisplay">$40 MXN</strong>
         </div>
 
-        <a id="btnEnviar" href="#" target="_blank" class="btn-whatsapp">
+        <button type="button" class="btn-whatsapp" onclick="enviarWhatsApp()">
             💬 Pedir Taxi por WhatsApp
-        </a>
+        </button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -238,12 +238,10 @@
         }
 
         function calcularTarifa() {
-            const origen = document.getElementById('origen').value.trim() || "No especificado";
             const destinoTexto = document.getElementById('destino').value.trim().toLowerCase();
+            let tarifa = 40; // Tarifa base urbana estándar en Perote
 
-            let tarifa = 40; // Tarifa base local estándar en Perote
-
-            // Motor de cálculo inteligente de tarifas según el destino escrito
+            // Motor inteligente de reconocimiento de destinos y comunidades
             if (destinoTexto.includes('totalco')) {
                 tarifa = 150;
             } else if (destinoTexto.includes('sierra de agua') || destinoTexto.includes('sierra')) {
@@ -252,20 +250,37 @@
                 tarifa = 80;
             } else if (destinoTexto.includes('los molinos') || destinoTexto.includes('molinos')) {
                 tarifa = 100;
-            } else if (destinoTexto.includes('hospital')) {
+            } else if (destinoTexto.includes('hospital') || destinoTexto.includes('periferica') || destinoTexto.includes('clínica')) {
                 tarifa = 50;
             } else {
-                tarifa = 40; // Urbano local estándar
+                tarifa = 40;
             }
 
             document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
-
-            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Destino: ${document.getElementById('destino').value.trim()}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
-            const numeroWhatsApp = "522821073249";
-            document.getElementById('btnEnviar').href = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+            return tarifa;
         }
 
-        calcularTarifa();
+        function enviarWhatsApp() {
+            const origen = document.getElementById('origen').value.trim() || "No especificado";
+            const destino = document.getElementById('destino').value.trim() || "No especificado";
+            const tarifa = calcularTarifa();
+
+            // Guardar en memoria local para sincronizar con la central.html automáticamente
+            const nuevoServicio = {
+                origen: origen,
+                destino: destino,
+                tarifa: `$${tarifa} MXN`,
+                tiempo: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            localStorage.setItem('taxiPeroteUltimoServicio', JSON.stringify(nuevoServicio));
+
+            // Enviar a WhatsApp de la central
+            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Destino: ${destino}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
+            const numeroWhatsApp = "522821073249";
+            
+            const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
+            window.open(url, '_blank');
+        }
     </script>
 </body>
 </html>
