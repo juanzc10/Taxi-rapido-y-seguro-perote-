@@ -12,11 +12,11 @@
             --whatsapp: #25D366;
             --whatsapp-dark: #1EBE57;
             --gps-btn: #007AFF;
-            --bg: #F2F2F7;
-            --card: #FFFFFF;
-            --text: #1C1C1E;
+            --bg: #1C1C1E;
+            --card: #2C2C2E;
+            --text: #FFFFFF;
             --text-secondary: #8E8E93;
-            --border: #E5E5EA;
+            --border: #38383A;
         }
 
         * {
@@ -52,60 +52,59 @@
             background: var(--card);
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
-            padding: 20px 16px 30px 16px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            padding: 24px 16px 32px 16px;
+            box-shadow: 0 -8px 25px rgba(0,0,0,0.4);
             z-index: 10;
-            max-height: 85vh;
-            overflow-y: auto;
         }
 
         .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         .panel-header h1 {
             font-size: 1.25rem;
             font-weight: 700;
-            color: var(--primary);
+            color: #FFF;
         }
 
         .btn-gps {
-            background-color: #E8F4FD;
+            background-color: rgba(0, 122, 255, 0.2);
             color: var(--gps-btn);
             border: none;
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 0.8rem;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             cursor: pointer;
         }
 
+        /* Contenedor de ruta estilo Uber oscuro */
         .route-box {
-            background: #F8F9FA;
+            background: #1C1C1E;
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 10px 14px;
-            margin-bottom: 12px;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
 
         .route-input-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .route-icon {
             font-size: 1rem;
-            width: 20px;
+            width: 24px;
             text-align: center;
         }
 
@@ -113,62 +112,41 @@
             width: 100%;
             border: none;
             background: transparent;
-            font-size: 0.95rem;
+            font-size: 1rem;
             color: var(--text);
             outline: none;
-            padding: 6px 0;
+        }
+
+        .route-input-group input::placeholder {
+            color: var(--text-secondary);
         }
 
         .route-divider {
             height: 1px;
             background-color: var(--border);
-            margin-left: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-        }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            background: #F8F9FA;
-            color: var(--text);
-            outline: none;
+            margin-left: 36px;
         }
 
         .fare-box {
-            background: #F2F8FF;
-            border-radius: 12px;
-            padding: 12px 16px;
+            background: #1C1C1E;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 14px 0;
+            margin-bottom: 16px;
         }
 
         .fare-box span {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-secondary);
             font-weight: 600;
         }
 
         .fare-box strong {
-            font-size: 1.4rem;
-            color: var(--primary);
+            font-size: 1.5rem;
+            color: #34C759;
         }
 
         .btn-whatsapp {
@@ -178,14 +156,14 @@
             width: 100%;
             padding: 16px;
             border-radius: 14px;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
             text-decoration: none;
             transition: background 0.2s;
         }
@@ -203,32 +181,20 @@
         <div class="panel-header">
             <h1>🚖 TaxiPerote</h1>
             <button type="button" class="btn-gps" onclick="obtenerUbicacionGPS()">
-                🛰️ Usar GPS
+                🛰️ Usar mi GPS
             </button>
         </div>
 
         <div class="route-box">
             <div class="route-input-group">
                 <span class="route-icon">📍</span>
-                <input type="text" id="direccionOrigen" placeholder="Calle, número o referencias de recogida..." oninput="calcularTarifa()">
+                <input type="text" id="origen" placeholder="¿Dónde estás? (Calle, número o referencias)" oninput="calcularTarifa()">
             </div>
             <div class="route-divider"></div>
             <div class="route-input-group">
                 <span class="route-icon">🏁</span>
-                <input type="text" id="direccionDestino" placeholder="¿A dónde vas? (Destino o calle)..." oninput="calcularTarifa()">
+                <input type="text" id="destino" placeholder="¿A dónde vas? (Destino o comunidad)" oninput="calcularTarifa()">
             </div>
-        </div>
-
-        <div class="form-group">
-            <label for="destinoTipo">Comunidad o Zona Destino (Referencia)</label>
-            <select id="destinoTipo" onchange="calcularTarifa()">
-                <option value="Local">Destino Local Estándar ($40)</option>
-                <option value="Hospital">Hospital / Zona Periférica ($50)</option>
-                <option value="Tenextepec">Tenextepec ($80)</option>
-                <option value="Sierra de Agua">Sierra de Agua ($90)</option>
-                <option value="Los Molinos">Los Molinos ($100)</option>
-                <option value="Totalco">Totalco ($150)</option>
-            </select>
         </div>
 
         <div class="fare-box">
@@ -260,9 +226,9 @@
                     
                     map.setView([lat, lon], 16);
                     marker.setLatLng([lat, lon])
-                          .bindPopup('<b>¡Tu ubicación GPS!</b>').openPopup();
+                          .bindPopup('<b>¡Ubicación GPS obtenida!</b>').openPopup();
 
-                    document.getElementById('direccionOrigen').value = `GPS Coordenadas: (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+                    document.getElementById('origen').value = `GPS Coordenadas: (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
                     calcularTarifa();
                 }, () => {
                     alert('No se pudo obtener la ubicación GPS. Escribe tu dirección manual.');
@@ -273,40 +239,31 @@
         }
 
         function calcularTarifa() {
-            const destinoTipo = document.getElementById('destinoTipo').value;
-            const dirOrigen = document.getElementById('direccionOrigen').value.trim();
-            const dirDestino = document.getElementById('direccionDestino').value.trim();
-            const textoDestinoLower = (dirDestino + " " + destinoTipo).toLowerCase();
+            const origen = document.getElementById('origen').value.trim() || "No especificado";
+            const destinoTexto = document.getElementById('destino').value.trim().toLowerCase();
 
-            let tarifa = 40; // Tarifa base local
+            let tarifa = 40; // Tarifa base local estándar en Perote
 
-            // Detección inteligente de tarifas basada en texto o selección
-            if (textoDestinoLower.includes('totalco')) {
+            // Motor de cálculo inteligente de tarifas basado en el destino escrito
+            if (destinoTexto.includes('totalco')) {
                 tarifa = 150;
-            } else if (textoDestinoLower.includes('sierra de agua') || textoDestinoLower.includes('sierra')) {
+            } else if (destinoTexto.includes('sierra de agua') || destinoTexto.includes('sierra')) {
                 tarifa = 90;
-            } else if (textoDestinoLower.includes('tenextepec')) {
+            } else if (destinoTexto.includes('tenextepec')) {
                 tarifa = 80;
-            } else if (textoDestinoLower.includes('los molinos') || textoDestinoLower.includes('molinos')) {
+            } else if (destinoTexto.includes('los molinos') || destinoTexto.includes('molinos')) {
                 tarifa = 100;
-            } else if (textoDestinoLower.includes('hospital') || destinoTipo === 'Hospital') {
+            } else if (destinoTexto.includes('hospital')) {
                 tarifa = 50;
-            } else if (destinoTipo === 'Tenextepec') {
-                tarifa = 80;
-            } else if (destinoTipo === 'Sierra de Agua') {
-                tarifa = 90;
-            } else if (destinoTipo === 'Los Molinos') {
-                tarifa = 100;
-            } else if (destinoTipo === 'Totalco') {
-                tarifa = 150;
+            } else if (destinoTexto === "") {
+                tarifa = 40;
+            } else {
+                tarifa = 40; // Por defecto local urbano en Perote
             }
 
             document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
 
-            let origenFinal = dirOrigen !== "" ? dirOrigen : "Centro de Perote (Sin especificar)";
-            let destinoFinal = dirDestino !== "" ? dirDestino : `Zona: ${destinoTipo}`;
-
-            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origenFinal}%0A🏁 Destino: ${destinoFinal}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
+            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Destino: ${document.getElementById('destino').value.trim()}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
             const numeroWhatsApp = "522821073249";
             document.getElementById('btnEnviar').href = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
         }
