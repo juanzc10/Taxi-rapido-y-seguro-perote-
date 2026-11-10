@@ -1,398 +1,581 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1C1C1E">
-    <title>TaxiPerote · Pide tu taxi</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root {
-            --primary: #0B3D91;
-            --whatsapp: #25D366;
-            --whatsapp-dark: #1EBE57;
-            --gps-btn: #0A84FF;
-            --bg: #1C1C1E;
-            --card: #2C2C2E;
-            --text: #FFFFFF;
-            --text-secondary: #8E8E93;
-            --border: #38383A;
-            --suggestion-bg: #3A3A3C;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        .floating-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--card);
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            padding: 24px 16px 32px 16px;
-            box-shadow: 0 -8px 25px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .panel-header h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #FFF;
-        }
-
-        .btn-gps {
-            background-color: rgba(10, 132, 255, 0.15);
-            color: var(--gps-btn);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .route-box {
-            background: #1C1C1E;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-
-        .route-input-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-        }
-
-        .route-icon {
-            font-size: 1rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .route-input-group input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            color: var(--text);
-            outline: none;
-        }
-
-        .route-input-group input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .route-divider {
-            height: 1px;
-            background-color: var(--border);
-            margin-left: 36px;
-        }
-
-        .suggestions-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: var(--suggestion-bg);
-            border-radius: 12px;
-            margin-top: 6px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 100;
-            max-height: 180px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .suggestion-item {
-            padding: 10px 14px;
-            font-size: 0.9rem;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            color: #FFF;
-        }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-
-        .suggestion-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .fare-box {
-            background: #1C1C1E;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .fare-box span {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .fare-box strong {
-            font-size: 1.5rem;
-            color: #34C759;
-        }
-
-        .btn-whatsapp {
-            background-color: var(--whatsapp);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .btn-whatsapp:hover {
-            background-color: var(--whatsapp-dark);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1C1C1E">
+<meta name="description" content="Pide tu taxi en Perote por WhatsApp con tarifa estimada al momento.">
+<title>TaxiPerote · Pide tu taxi</title>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+<link rel="preconnect" href="https://photon.komoot.io" crossorigin>
+<link rel="preconnect" href="https://routing.openstreetmap.de" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--wa:#25D366;--wa-dark:#1EBE57;--azul:#0A84FF;--bg:#1C1C1E;--card:#2C2C2E;--txt:#fff;--txt2:#8E8E93;--borde:#38383A;--sug:#3A3A3C;--verde:#34C759;--rojo:#FF453A;--amarillo:#FFD60A}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--txt);overflow:hidden}
+.mapa{position:fixed;inset:0;z-index:1;background:#1C1C1E}
+/* Mapa oscuro: se invierten los colores de los mosaicos de OpenStreetMap en el navegador. */
+.oscuro .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6)}
+.leaflet-control-attribution{font-size:10px;background:rgba(28,28,30,.75)!important;color:#C7C7CC!important}
+.leaflet-control-attribution a{color:#8EC5FF!important}
+.hoja{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--card);border-radius:24px 24px 0 0;
+  box-shadow:0 -8px 25px rgba(0,0,0,.5);max-height:78vh;display:flex;flex-direction:column}
+.hoja-scroll{overflow-y:auto;padding:14px 16px 8px}
+.hoja-pie{padding:8px 16px calc(14px + env(safe-area-inset-bottom));background:var(--card)}
+@media (min-width:700px){.hoja{left:16px;right:auto;bottom:16px;width:420px;border-radius:24px}}
+.encabezado{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.encabezado h1{font-size:1.2rem;font-weight:700}
+.modo{font-size:.7rem;color:var(--txt2)}
+.campo{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;background:var(--bg);border:1px solid var(--borde);border-radius:14px;padding:0 12px;position:relative;min-height:52px}
+.campo+.campo{margin-top:8px}
+.campo .ico{font-size:1.1rem;width:24px;text-align:center}
+.campo input{flex:1;min-width:0;border:none;background:transparent;color:var(--txt);font-size:1rem;outline:none;padding:14px 0}
+.campo input::placeholder{color:var(--txt2)}
+.campo.grande{min-height:60px;border-color:#4A4A4E}
+.campo.grande input{font-size:1.15rem;font-weight:600}
+.campo:focus-within{border-color:var(--azul)}
+.btn-ico{background:none;border:none;color:var(--txt2);font-size:1.1rem;min-width:44px;min-height:44px;cursor:pointer;display:none}
+.btn-gps{background:rgba(10,132,255,.15);color:var(--azul);border:none;border-radius:12px;padding:0 12px;min-height:40px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-gps:disabled{opacity:.6}
+.sugerencias{flex-basis:100%;margin:0 -12px;background:var(--sug);border-radius:0 0 12px 12px;z-index:2000;max-height:240px;overflow-y:auto;display:none}
+.sug{padding:12px 14px;font-size:.95rem;border-bottom:1px solid var(--borde);cursor:pointer;min-height:48px}
+.sug:last-child{border-bottom:none}
+.sug small{display:block;color:var(--txt2);font-size:.75rem;margin-top:2px}
+.sug:active,.sug:hover{background:rgba(255,255,255,.1)}
+.sug-nota{padding:10px 14px;font-size:.8rem;color:var(--txt2)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;background:var(--bg);color:var(--txt);border:1px solid var(--borde);border-radius:22px;padding:0 14px;min-height:44px;font-size:.92rem;cursor:pointer}
+.chip.activo{background:rgba(10,132,255,.2);border-color:var(--azul);color:#8EC5FF}
+.pista{font-size:.75rem;color:var(--txt2);margin:4px 2px 0}
+.tarifa{background:var(--bg);border:1px solid var(--borde);border-radius:14px;padding:12px 16px;margin-top:10px}
+.tarifa-fila{display:flex;justify-content:space-between;align-items:baseline}
+.tarifa-fila span{color:var(--txt2);font-weight:600;font-size:.95rem}
+.tarifa-fila strong{font-size:1.7rem;color:var(--verde)}
+.tarifa-fila strong.calc{color:#9BE7AE;opacity:.8}
+.detalle{font-size:.85rem;color:#C7C7CC;margin-top:4px}
+.nota{font-size:.72rem;color:var(--txt2);margin-top:4px}
+.msg{display:none;font-size:.85rem;border-radius:10px;padding:8px 12px;margin-top:10px;background:rgba(255,69,58,.15);color:#FF9F9A}
+.msg.info{background:rgba(10,132,255,.15);color:#8EC5FF}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--txt2);font-size:.9rem;min-height:40px;display:flex;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+details .campo{margin-top:6px}
+.btn-wa{background:var(--wa);color:#fff;border:none;width:100%;min-height:58px;border-radius:16px;font-size:1.15rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 4px 15px rgba(37,211,102,.4)}
+.btn-wa:active{background:var(--wa-dark)}
+.pin{width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
+.leaflet-container{background:#1C1C1E}
+</style>
 </head>
 <body>
+<div id="mapa" class="mapa"></div>
 
-    <div id="map"></div>
-
-    <div class="floating-panel">
-        <div class="panel-header">
-            <h1>🚖 TaxiPerote</h1>
-            <button type="button" class="btn-gps" onclick="obtenerUbicacionGPS()">
-                🛰️ Usar mi GPS
-            </button>
-        </div>
-
-        <div class="route-box">
-            <div class="route-input-group">
-                <span class="route-icon">📍</span>
-                <input type="text" id="origen" placeholder="¿Dónde estás? (GPS o calle)" oninput="manejarInputOrigen()">
-                <div id="sugerenciasOrigen" class="suggestions-list"></div>
-            </div>
-            <div class="route-divider"></div>
-            <div class="route-input-group">
-                <span class="route-icon">🏁</span>
-                <input type="text" id="destino" placeholder="¿A dónde vas? (Destino o comunidad)" oninput="manejarInputDestino()">
-                <div id="sugerenciasDestino" class="suggestions-list"></div>
-            </div>
-        </div>
-
-        <div class="fare-box">
-            <span>Tarifa Estimada (Incluye traslado de base)</span>
-            <strong id="precioDisplay">$40 MXN</strong>
-        </div>
-
-        <button type="button" class="btn-whatsapp" onclick="enviarWhatsApp()">
-            💬 Pedir Taxi por WhatsApp
-        </button>
+<div class="hoja" id="hoja">
+  <div class="hoja-scroll">
+    <div class="encabezado">
+      <h1>🚖 TaxiPerote</h1>
+      <span class="modo">Mapa gratuito · OpenStreetMap</span>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map', {zoomControl: false}).setView([19.5694, -97.2472], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+    <div class="campo" id="campoOrigen">
+      <span class="ico">📍</span>
+      <input id="origen" type="text" autocomplete="off" enterkeyhint="search" placeholder="Buscando tu ubicación…" aria-label="Punto de recogida">
+      <button type="button" class="btn-ico" id="limpiarOrigen" aria-label="Borrar recogida">✕</button>
+      <button type="button" class="btn-gps" id="btnGps">🛰️ GPS</button>
+      <div class="sugerencias" id="sugOrigen"></div>
+    </div>
 
-        let marker = L.marker([19.5694, -97.2472]).addTo(map)
-            .bindPopup('<b>TaxiPerote Base</b>').openPopup();
+    <div class="campo grande" id="campoDestino">
+      <span class="ico">🏁</span>
+      <input id="destino" type="text" autocomplete="off" enterkeyhint="search" placeholder="¿A dónde vas?" aria-label="Destino">
+      <button type="button" class="btn-ico" id="limpiarDestino" aria-label="Borrar destino">✕</button>
+      <div class="sugerencias" id="sugDestino"></div>
+    </div>
 
-        const lugaresPerote = [
-            "Centro de Perote, Parque Juárez",
-            "Terminal de Autobuses Perote",
-            "Hospital General Perote",
-            "Fortaleza de San Carlos",
-            "Totalco",
-            "Sierra de Agua",
-            "Tenextepec",
-            "Los Molinos"
-        ];
+    <div class="chips" id="chips"></div>
+    <p class="pista" id="pista">Toca un destino frecuente, escríbelo o toca el mapa.</p>
 
-        function obtenerUbicacionGPS() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    
-                    map.setView([lat, lon], 16);
-                    marker.setLatLng([lat, lon])
-                          .bindPopup('<b>¡Ubicación GPS obtenida!</b>').openPopup();
+    <div class="msg" id="mensaje" role="status"></div>
 
-                    document.getElementById('origen').value = `Totalco (GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-                    calcularTarifa();
-                }, () => {
-                    alert('No se pudo obtener la ubicación GPS. Escribe tu dirección manual.');
-                }, { enableHighAccuracy: true });
-            } else {
-                alert('Tu dispositivo no soporta geolocalización.');
-            }
-        }
+    <div class="tarifa">
+      <div class="tarifa-fila"><span>Tarifa estimada</span><strong id="precio">—</strong></div>
+      <div class="detalle" id="detalle">Elige tu destino para ver el precio.</div>
+      <div class="nota">Precio aproximado por kilómetros. El conductor lo confirma por WhatsApp.</div>
+    </div>
 
-        function manejarInputOrigen() {
-            const val = document.getElementById('origen').value.toLowerCase();
-            const contenedor = document.getElementById('sugerenciasOrigen');
-            contenedor.innerHTML = '';
-            
-            if (val.length < 1) {
-                contenedor.style.display = 'none';
-                calcularTarifa();
-                return;
-            }
+    <details id="extras">
+      <summary>➕ Tu nombre y una referencia (opcional)</summary>
+      <div class="campo"><span class="ico">🙋</span><input id="nombre" type="text" autocomplete="name" placeholder="Tu nombre" maxlength="60"></div>
+      <div class="campo"><span class="ico">🏠</span><input id="referencia" type="text" placeholder="Referencia: casa azul, frente a la tienda…" maxlength="120"></div>
+    </details>
+  </div>
+  <div class="hoja-pie">
+    <button type="button" class="btn-wa" id="btnPedir">💬 Pedir taxi por WhatsApp</button>
+  </div>
+</div>
 
-            const filtrados = lugaresPerote.filter(l => l.toLowerCase().includes(val));
-            if (filtrados.length > 0) {
-                contenedor.style.display = 'block';
-                filtrados.forEach(lugar => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerText = lugar;
-                    div.onclick = () => {
-                        document.getElementById('origen').value = lugar;
-                        contenedor.style.display = 'none';
-                        calcularTarifa();
-                    };
-                    contenedor.appendChild(div);
-                });
-            } else {
-                contenedor.style.display = 'none';
-            }
-            calcularTarifa();
-        }
+<script>
+/* =====================================================================
+   TaxiPerote — versión 100 % gratuita (sin Google, sin claves).
+   Mapa: OpenStreetMap · Rutas: OSRM (FOSSGIS) · Búsqueda: Photon (komoot)
+   ===================================================================== */
 
-        function manejarInputDestino() {
-            const val = document.getElementById('destino').value.toLowerCase();
-            const contenedor = document.getElementById('sugerenciasDestino');
-            contenedor.innerHTML = '';
-            
-            if (val.length < 1) {
-                contenedor.style.display = 'none';
-                calcularTarifa();
-                return;
-            }
+/* ---------------- CONFIGURACIÓN DE PRECIOS — Juan: cambia aquí (MXN) ---------------- */
+const TARIFA = {
+  BANDERAZO: 25,          // Lo que se cobra nomás por subir.
+  PRECIO_KM: 9,           // Pesos por km del viaje (recogida → destino).
+  MINIMO: 40,             // Ningún viaje cuesta menos que esto.
+  // Km "en vacío": de la base a la recogida y del destino de regreso a la base.
+  // Los primeros KM_VACIO_GRATIS de cada tramo no se cobran (zona urbana).
+  KM_VACIO_GRATIS: 3,
+  PRECIO_KM_VACIO: 4.5,   // Pon 0 para no cobrar km en vacío.
+  RECARGO_NOCTURNO: 0.20, // 0.20 = 20 % más. Pon 0 para quitarlo.
+  HORA_INICIO_NOCHE: 22,  // 22:00
+  HORA_FIN_NOCHE: 6,      // hasta 06:00
+  REDONDEO: 5,            // Redondear al múltiplo de $5 más cercano.
+  FACTOR_SIN_RUTA: 1.3,   // Sin servicio de rutas: línea recta × 1.3
+  FACTOR_INSTANTANEO: 1.15, // Precio "≈" que se muestra mientras llega la ruta real.
+  VELOCIDAD_KMH: 35       // Para estimar minutos si no hay servicio de rutas.
+};
+// Tarifas fijas opcionales: cambia a true para usarlas en vez del cálculo por km.
+const USAR_TARIFAS_FIJAS = false;
+const TARIFAS_FIJAS = { "Totalco": 250, "Los Molinos": 180, "Sierra de Agua": 160, "Tenextepec": 140 };
 
-            const filtrados = lugaresPerote.filter(l => l.toLowerCase().includes(val));
-            if (filtrados.length > 0) {
-                contenedor.style.display = 'block';
-                filtrados.forEach(lugar => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerText = lugar;
-                    div.onclick = () => {
-                        document.getElementById('destino').value = lugar;
-                        contenedor.style.display = 'none';
-                        calcularTarifa();
-                    };
-                    contenedor.appendChild(div);
-                });
-            } else {
-                contenedor.style.display = 'none';
-            }
-            calcularTarifa();
-        }
+const NUMERO_WHATSAPP = "522821073249";
+const BASE = { lat: 19.5694, lon: -97.2472 };
+const ZONA_BUSQUEDA = { oeste: -97.55, sur: 19.30, este: -96.95, norte: 19.80 };
 
-        function calcularTarifa() {
-            const origenTexto = document.getElementById('origen').value.trim().toLowerCase();
-            const destinoTexto = document.getElementById('destino').value.trim().toLowerCase();
-            const textoCompleto = origenTexto + " " + destinoTexto;
+/* ---------------- SERVICIOS GRATUITOS (se pueden cambiar aquí sin tocar lo demás) ---------------- */
+const SERVICIOS = {
+  MAPA: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  MAPA_OSCURO: true,  // true = mapa oscuro (colores invertidos en el navegador)
+  RUTAS: ['https://routing.openstreetmap.de/routed-car/route/v1/driving/',   // FOSSGIS
+          'https://router.project-osrm.org/route/v1/driving/'],             // respaldo
+  PHOTON: 'https://photon.komoot.io',
+  NOMINATIM: 'https://nominatim.openstreetmap.org'  // solo respaldo y solo al tocar "buscar"
+};
+/* ===================================================================== */
 
-            let tarifa = 40; // Tarifa local base
+// Coordenadas fijas de los destinos frecuentes (botones instantáneos, sin consultar internet).
+const LUGARES = [
+  { chip: "🏛️ Centro",     nombre: "Centro de Perote, Plaza de Armas", lat: 19.56138, lon: -97.24250 },
+  { chip: "🚌 Terminal",   nombre: "Terminal de Autobuses ADO Perote", lat: 19.56249, lon: -97.24348 },
+  { chip: "🏥 Hospital",   nombre: "Hospital General Perote",          lat: 19.55973, lon: -97.24467 },
+  { chip: "Totalco",        nombre: "Totalco",                           lat: 19.50194, lon: -97.34750 },
+  { chip: "Los Molinos",    nombre: "Los Molinos",                       lat: 19.59472, lon: -97.21583 },
+  { chip: "Sierra de Agua", nombre: "Sierra de Agua",                    lat: 19.60444, lon: -97.20083 },
+  { chip: "Tenextepec",     nombre: "Tenextepec",                        lat: 19.48545, lon: -97.26569 },
+  { chip: "🏰 Fortaleza",  nombre: "Fortaleza de San Carlos",          lat: 19.57357, lon: -97.24549 }
+];
 
-            // Si el servicio involucra Totalco (salida o llegada desde la base en Perote)
-            if (textoCompleto.includes('totalco')) {
-                tarifa = 250; // Tarifa justa que cubre el traslado del taxi desde la base en Perote
-            } else if (textoCompleto.includes('los molinos') || textoCompleto.includes('molinos')) {
-                tarifa = 180;
-            } else if (textoCompleto.includes('sierra de agua') || textoCompleto.includes('sierra')) {
-                tarifa = 160;
-            } else if (textoCompleto.includes('tenextepec')) {
-                tarifa = 140;
-            } else if (textoCompleto.includes('hospital') || textoCompleto.includes('periférica')) {
-                tarifa = 50;
-            } else {
-                tarifa = 40;
-            }
+/* ---------------- Tarifa (funciones puras) ---------------- */
+function esHorarioNocturno(f) {
+  const h = f.getHours(), i = TARIFA.HORA_INICIO_NOCHE, n = TARIFA.HORA_FIN_NOCHE;
+  return i > n ? (h >= i || h < n) : (h >= i && h < n);
+}
+function calcularTarifaKm(kmViaje, kmIda, kmRegreso, fecha) {
+  kmViaje = Math.max(0, Number(kmViaje) || 0);
+  const vacio = Math.max(0, (Number(kmIda) || 0) - TARIFA.KM_VACIO_GRATIS)
+              + Math.max(0, (Number(kmRegreso) || 0) - TARIFA.KM_VACIO_GRATIS);
+  let total = TARIFA.BANDERAZO + kmViaje * TARIFA.PRECIO_KM + vacio * TARIFA.PRECIO_KM_VACIO;
+  const nocturno = !!fecha && TARIFA.RECARGO_NOCTURNO > 0 && esHorarioNocturno(fecha);
+  if (nocturno) total *= 1 + TARIFA.RECARGO_NOCTURNO;
+  total = Math.round(Math.max(TARIFA.MINIMO, total) / TARIFA.REDONDEO) * TARIFA.REDONDEO;
+  return { total, nocturno, kmVacio: vacio };
+}
+function distanciaRectaKm(a, b) {
+  const R = 6371, r = Math.PI / 180, dLa = (b.lat - a.lat) * r, dLo = (b.lon - a.lon) * r;
+  const x = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function estimacionRecta(o, d, f = TARIFA.FACTOR_SIN_RUTA) {
+  const v = TARIFA.VELOCIDAD_KMH / 60;
+  const kmViaje = distanciaRectaKm(o, d) * f, kmIda = distanciaRectaKm(BASE, o) * f;
+  return { kmViaje, minViaje: kmViaje / v, kmIda, minIda: kmIda / v,
+           kmRegreso: distanciaRectaKm(d, BASE) * f, path: null, aproximado: true };
+}
+</script>
 
-            document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
-            return tarifa;
-        }
+<script>
+/* ======================= Utilidades ======================= */
+const $ = (id) => document.getElementById(id);
+const esperar = (ms) => new Promise(r => setTimeout(r, ms));
+async function fetchJSON(url, { ms = 7000, signal } = {}) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  if (signal) signal.addEventListener('abort', () => c.abort());
+  try {
+    const r = await fetch(url, { signal: c.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+// Cola sencilla: como máximo 1 consulta por segundo a cada servicio (lo piden sus reglas de uso).
+const ultimoUso = {};
+async function turno(servicio, msMin = 1100) {
+  const ahora = Date.now(), listo = Math.max(ahora, (ultimoUso[servicio] || 0) + msMin);
+  ultimoUso[servicio] = listo;
+  if (listo > ahora) await esperar(listo - ahora);
+}
+function cacheGuardar(mapa, k, v, max = 60) { mapa.set(k, v); if (mapa.size > max) mapa.delete(mapa.keys().next().value); }
 
-        function enviarWhatsApp() {
-            const origen = document.getElementById('origen').value.trim() || "No especificado";
-            const destino = document.getElementById('destino').value.trim() || "No especificado";
-            const tarifa = calcularTarifa();
+/* ======================= Servicios gratuitos ======================= */
+const cacheBusqueda = new Map(), cacheInverso = new Map(), cacheRutas = new Map();
+const B = ZONA_BUSQUEDA;
 
-            // Sincronización automática con la central
-            const nuevoServicio = {
-                origen: origen,
-                destino: destino,
-                tarifa: `$${tarifa} MXN`,
-                tiempo: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            localStorage.setItem('taxiPeroteUltimoServicio', JSON.stringify(nuevoServicio));
+function nombrePhoton(p) {
+  const calle = [p.street, p.housenumber].filter(Boolean).join(' ');
+  const principal = p.name || calle || p.district || p.city || 'Lugar';
+  const detalle = [p.name && calle ? calle : '', p.district || p.locality, p.city || p.county, p.state].filter(Boolean)
+    .filter((x, i, a) => a.indexOf(x) === i && x !== principal).join(', ');
+  return { principal, detalle };
+}
 
-            // Mensaje para la central de WhatsApp
-            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Destino: ${destino}%0A💰 Tarifa Cotizada: $${tarifa} MXN (Incluye traslado desde base)`;
-            const numeroWhatsApp = "522821073249";
-            
-            const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
-            window.open(url, '_blank');
-        }
-    </script>
+let buscarCtrl = null;
+async function buscarPhoton(texto) {
+  const k = 'p:' + texto.toLowerCase();
+  if (cacheBusqueda.has(k)) return cacheBusqueda.get(k);
+  if (buscarCtrl) buscarCtrl.abort();            // cancela la búsqueda anterior
+  buscarCtrl = new AbortController();
+  const url = `${SERVICIOS.PHOTON}/api/?q=${encodeURIComponent(texto)}&lat=${BASE.lat}&lon=${BASE.lon}`
+    + `&limit=10&lang=default&zoom=12&location_bias_scale=0.1&bbox=${B.oeste},${B.sur},${B.este},${B.norte}`;
+  const d = await fetchJSON(url, { ms: 5000, signal: buscarCtrl.signal });
+  const vistos = new Set();
+  const res = (d.features || []).map(f => {
+    const n = nombrePhoton(f.properties || {});
+    const r = { nombre: n.principal, lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0] };
+    r.km = distanciaRectaKm(BASE, r);
+    r.detalle = [n.detalle, `a ${r.km < 1 ? '<1' : Math.round(r.km)} km de la base`].filter(Boolean).join(' · ');
+    return r;
+  }).filter(r => { const k = r.nombre + '|' + r.detalle; if (vistos.has(k)) return false; vistos.add(k); return true; })
+    .sort((x, y) => x.km - y.km).slice(0, 6);   // lo más cercano a Perote primero
+  cacheGuardar(cacheBusqueda, k, res);
+  return res;
+}
+// Respaldo: Nominatim NO permite autocompletar, así que solo se usa cuando el cliente toca "Buscar"/Enter.
+async function buscarNominatim(texto) {
+  const k = 'n:' + texto.toLowerCase();
+  if (cacheBusqueda.has(k)) return cacheBusqueda.get(k);
+  await turno('nominatim');
+  const d = await fetchJSON(`${SERVICIOS.NOMINATIM}/search?format=jsonv2&limit=6&countrycodes=mx&bounded=1`
+    + `&viewbox=${B.oeste},${B.norte},${B.este},${B.sur}&q=` + encodeURIComponent(texto));
+  const res = d.map(x => ({ nombre: x.name || x.display_name.split(',')[0], detalle: x.display_name, lat: +x.lat, lon: +x.lon }));
+  cacheGuardar(cacheBusqueda, k, res);
+  return res;
+}
+async function nombreDeCoordenadas(p) {
+  const k = p.lat.toFixed(4) + ',' + p.lon.toFixed(4);
+  if (cacheInverso.has(k)) return cacheInverso.get(k);
+  let nombre = null;
+  try {
+    const d = await fetchJSON(`${SERVICIOS.PHOTON}/reverse?lat=${p.lat}&lon=${p.lon}&lang=default&limit=1`, { ms: 5000 });
+    const f = d.features && d.features[0];
+    if (f) {
+      const q = f.properties, calle = [q.street, q.housenumber].filter(Boolean).join(' ');
+      nombre = [calle || q.name, q.district || q.locality || q.city].filter(Boolean).join(', ') || null;
+    }
+  } catch (e) {}
+  if (!nombre) {
+    try {
+      await turno('nominatim');
+      const d = await fetchJSON(`${SERVICIOS.NOMINATIM}/reverse?format=jsonv2&zoom=18&lat=${p.lat}&lon=${p.lon}`);
+      const a = d.address || {};
+      nombre = [[a.road, a.house_number].filter(Boolean).join(' '), a.neighbourhood || a.suburb || a.village || a.town || a.city]
+        .filter(Boolean).join(', ') || d.display_name || null;
+    } catch (e) {}
+  }
+  if (nombre) cacheGuardar(cacheInverso, k, nombre);
+  return nombre;
+}
+// Una sola consulta por cotización: base → recogida → destino → base.
+async function calcularRuta(o, d) {
+  const pts = [BASE, o, d, BASE].map(p => `${p.lon.toFixed(6)},${p.lat.toFixed(6)}`).join(';');
+  let ultimoError;
+  for (const servidor of SERVICIOS.RUTAS) {
+    try {
+      await turno('rutas:' + servidor);
+      const r = await fetchJSON(servidor + pts + '?overview=false&steps=true&geometries=geojson', { ms: 7000 });
+      if (r.code !== 'Ok' || !r.routes || !r.routes.length) throw new Error('Sin ruta');
+      const legs = r.routes[0].legs, path = [];
+      legs[1].steps.forEach(s => s.geometry.coordinates.forEach(c => path.push({ lat: c[1], lon: c[0] })));
+      return { kmViaje: legs[1].distance / 1000, minViaje: legs[1].duration / 60,
+               kmIda: legs[0].distance / 1000, minIda: legs[0].duration / 60,
+               kmRegreso: legs[2].distance / 1000, path, aproximado: false };
+    } catch (e) { ultimoError = e; }
+  }
+  throw ultimoError;
+}
+
+/* ======================= Mapa (Leaflet) ======================= */
+let mapa = null, linea = null;
+const marcas = {};
+function pinHTML(color) { return `<div class="pin" style="background:${color}"></div>`; }
+function iniciarMapa() {
+  if (typeof L === 'undefined') {
+    $('mapa').innerHTML = '<p style="padding:20px;color:#8E8E93">No se pudo cargar el mapa. Aún puedes pedir tu taxi por WhatsApp.</p>';
+    return;
+  }
+  if (SERVICIOS.MAPA_OSCURO) $('mapa').classList.add('oscuro');
+  mapa = L.map('mapa', { zoomControl: false, attributionControl: false }).setView([BASE.lat, BASE.lon], 14);
+  // Créditos arriba para que el panel no los tape (lo piden las reglas de OpenStreetMap).
+  L.control.attribution({ position: 'topright', prefix: false }).addTo(mapa);
+  L.tileLayer(SERVICIOS.MAPA, {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · '
+      + 'Rutas <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM</a> · '
+      + 'Búsqueda <a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> · '
+      + '<a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener">Corregir mapa</a>'
+  }).addTo(mapa);
+  L.circleMarker([BASE.lat, BASE.lon], { radius: 7, color: '#FFD60A', fillColor: '#FFD60A', fillOpacity: .9 }).addTo(mapa).bindPopup('<b>Base TaxiPerote</b>');
+  mapa.on('click', e => alTocarMapa({ lat: e.latlng.lat, lon: e.latlng.lng }));
+  ['origen', 'destino'].forEach(t => marcar(t, puntos[t]));
+}
+function marcar(tipo, p) {
+  if (!mapa) return;
+  const m = marcas[tipo];
+  if (!p) { if (m) { mapa.removeLayer(m); delete marcas[tipo]; } return; }
+  if (m) { m.setLatLng([p.lat, p.lon]); return; }
+  const icon = L.divIcon({ className: '', html: pinHTML(tipo === 'origen' ? '#34C759' : '#FF453A'), iconSize: [20, 20], iconAnchor: [10, 10] });
+  const mk = L.marker([p.lat, p.lon], { icon, draggable: true, autoPan: true }).addTo(mapa);
+  mk.on('dragend', () => { const ll = mk.getLatLng(); alArrastrar(tipo, { lat: ll.lat, lon: ll.lng }); });
+  marcas[tipo] = mk;
+}
+function dibujar(path, o, d) {
+  if (!mapa) return;
+  if (linea) { mapa.removeLayer(linea); linea = null; }
+  if (!o || !d) return;
+  linea = path
+    ? L.polyline(path.map(p => [p.lat, p.lon]), { color: '#0A84FF', weight: 5, opacity: .9 })
+    : L.polyline([[o.lat, o.lon], [d.lat, d.lon]], { color: '#0A84FF', weight: 4, dashArray: '8 8' });
+  linea.addTo(mapa);
+  mapa.fitBounds(linea.getBounds(), { paddingTopLeft: [30, 40], paddingBottomRight: [30, $('hoja').offsetHeight + 20], maxZoom: 16 });
+}
+function centrar(p, z = 16) { if (mapa) mapa.setView([p.lat, p.lon], z); }
+
+/* ======================= Estado y lógica ======================= */
+const puntos = { origen: null, destino: null };
+let cotizacion = null, folio = 0;
+
+function mostrarMensaje(t, tipo) {
+  const el = $('mensaje'); if (!t) { el.style.display = 'none'; return; }
+  el.textContent = t; el.className = 'msg' + (tipo === 'info' ? ' info' : ''); el.style.display = 'block';
+}
+function botonesLimpiar() {
+  ['origen', 'destino'].forEach(c => { $(c === 'origen' ? 'limpiarOrigen' : 'limpiarDestino').style.display = $(c).value ? 'block' : 'none'; });
+  $('btnGps').style.display = puntos.origen && puntos.origen.gps ? 'none' : 'block';
+}
+function marcarChip() {
+  document.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('activo', !!puntos.destino && puntos.destino.nombre === ch.dataset.nombre));
+}
+function fijarPunto(tipo, p, { centrarMapa = false } = {}) {
+  puntos[tipo] = p;
+  $(tipo).value = p ? p.nombre : '';
+  marcar(tipo, p);
+  if (p && centrarMapa && !(puntos.origen && puntos.destino)) centrar(p);
+  botonesLimpiar(); marcarChip();
+  $('pista').textContent = !puntos.origen ? 'Marca dónde te recogemos: usa el GPS, escribe o toca el mapa.'
+    : !puntos.destino ? 'Toca un destino frecuente, escríbelo o toca el mapa.'
+    : 'Listo. Puedes mover los pines del mapa para ajustar.';
+  recalcular();
+}
+async function ponerNombre(tipo, p, sufijo = '') {
+  const n = await nombreDeCoordenadas(p);
+  if (n && puntos[tipo] && puntos[tipo].lat === p.lat && puntos[tipo].lon === p.lon) {
+    puntos[tipo].nombre = n + sufijo; $(tipo).value = puntos[tipo].nombre; botonesLimpiar();
+  }
+}
+function alTocarMapa(p) {
+  const tipo = !puntos.origen ? 'origen' : 'destino';
+  fijarPunto(tipo, { ...p, nombre: `Punto en el mapa (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})` });
+  ponerNombre(tipo, p);
+}
+function alArrastrar(tipo, p) {
+  const gps = tipo === 'origen' && puntos.origen && puntos.origen.gps;
+  fijarPunto(tipo, { ...p, nombre: `Punto ajustado (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})` });
+  ponerNombre(tipo, p, gps ? ' (ajustado)' : '');
+}
+
+/* ---------------- GPS ---------------- */
+function pedirGPS(automatico) {
+  const btn = $('btnGps');
+  if (!navigator.geolocation) {
+    $('origen').placeholder = '¿Dónde te recogemos? (calle o colonia)';
+    if (!automatico) mostrarMensaje('Tu celular no permite usar el GPS aquí. Escribe tu dirección o toca el mapa.');
+    return;
+  }
+  btn.disabled = true; btn.textContent = '🛰️ …';
+  $('origen').placeholder = 'Buscando tu ubicación…';
+  navigator.geolocation.getCurrentPosition(pos => {
+    btn.disabled = false; btn.textContent = '🛰️ GPS';
+    const p = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+    fijarPunto('origen', { ...p, nombre: `Mi ubicación (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})`, gps: true }, { centrarMapa: true });
+    mostrarMensaje('');
+    ponerNombre('origen', p, ' (GPS)');
+  }, err => {
+    btn.disabled = false; btn.textContent = '🛰️ GPS';
+    $('origen').placeholder = '¿Dónde te recogemos? (calle o colonia)';
+    const m = { 1: 'No diste permiso de ubicación. Toca 🛰️ GPS para intentarlo de nuevo, o escribe dónde te recogemos.',
+                2: 'No se encontró tu ubicación. Escribe dónde te recogemos o toca el mapa.',
+                3: 'El GPS tardó demasiado. Toca 🛰️ GPS otra vez o escribe tu dirección.' };
+    mostrarMensaje(m[err.code] || m[2]);
+    botonesLimpiar();
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
+
+/* ---------------- Búsqueda mientras escribe ---------------- */
+const temporizador = {};
+function sinAcentos(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+function configurarCampo(tipo, idSug) {
+  const input = $(tipo), cont = $(idSug);
+  input.addEventListener('input', () => {
+    if (puntos[tipo]) { puntos[tipo] = null; marcar(tipo, null); marcarChip(); recalcular(); }
+    botonesLimpiar();
+    const val = input.value.trim(); clearTimeout(temporizador[tipo]);
+    if (!val) { cont.style.display = 'none'; return; }
+    const locales = LUGARES.filter(l => sinAcentos(l.nombre).includes(sinAcentos(val)));
+    pintar(tipo, cont, locales, val.length >= 3 ? 'Buscando…' : '');
+    if (val.length < 3) return;
+    temporizador[tipo] = setTimeout(async () => {
+      try {
+        const r = await buscarPhoton(val);
+        if (input.value.trim() !== val || puntos[tipo]) return;
+        pintar(tipo, cont, locales.concat(r), r.length || locales.length ? '' : 'Sin resultados. Toca Enter para buscar más, o toca el mapa.');
+      } catch (e) {
+        if (e.name === 'AbortError' || input.value.trim() !== val || puntos[tipo]) return;
+        pintar(tipo, cont, locales, 'La búsqueda rápida no respondió. Toca Enter para buscar, o toca el mapa.');
+      }
+    }, 300);
+  });
+  input.addEventListener('keydown', async e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const s = cont.querySelector('.sug'); if (s) { s.click(); return; }
+    const val = input.value.trim(); if (val.length < 3) return;
+    pintar(tipo, cont, [], 'Buscando…');
+    try {   // búsqueda explícita: Photon y, si no hay nada, Nominatim
+      let r = []; try { r = await buscarPhoton(val); } catch (err) {}
+      if (!r.length) r = await buscarNominatim(val);
+      if (input.value.trim() !== val) return;
+      pintar(tipo, cont, r, r.length ? '' : 'Sin resultados. Prueba otra calle o toca el mapa.');
+    } catch (err) { pintar(tipo, cont, [], 'No se pudo buscar (¿sin señal?). Toca el mapa para marcar el punto.'); }
+  });
+  input.addEventListener('blur', () => setTimeout(() => { cont.style.display = 'none'; }, 200));
+  input.addEventListener('focus', () => { if (cont.querySelector('.sug')) cont.style.display = 'block'; });
+  $(tipo === 'origen' ? 'limpiarOrigen' : 'limpiarDestino').addEventListener('click', () => { fijarPunto(tipo, null); input.focus(); });
+}
+function pintar(tipo, cont, lista, nota) {
+  cont.innerHTML = '';
+  lista.forEach(item => {
+    const div = document.createElement('div'); div.className = 'sug'; div.textContent = item.nombre;
+    if (item.detalle) { const s = document.createElement('small'); s.textContent = item.detalle; div.appendChild(s); }
+    div.addEventListener('mousedown', e => e.preventDefault());
+    div.addEventListener('click', () => {
+      clearTimeout(temporizador[tipo]); cont.style.display = 'none'; $(tipo).blur();
+      fijarPunto(tipo, { lat: item.lat, lon: item.lon, nombre: item.nombre }, { centrarMapa: true });
+    });
+    cont.appendChild(div);
+  });
+  if (nota) { const n = document.createElement('div'); n.className = 'sug-nota'; n.textContent = nota; cont.appendChild(n); }
+  cont.style.display = cont.childElementCount ? 'block' : 'none';
+  if (cont.childElementCount) cont.scrollIntoView({ block: 'nearest' });
+}
+
+/* ---------------- Cotización ---------------- */
+function tarifaFija() {
+  if (!USAR_TARIFAS_FIJAS) return null;
+  const t = ((puntos.origen?.nombre || '') + ' ' + (puntos.destino?.nombre || '')).toLowerCase();
+  for (const [lugar, precio] of Object.entries(TARIFAS_FIJAS)) if (t.includes(lugar.toLowerCase())) return { lugar, precio };
+  return null;
+}
+function mostrarCotizacion(r, calculando) {
+  const t = calcularTarifaKm(r.kmViaje, r.kmIda, r.kmRegreso, new Date());
+  const fija = tarifaFija(), total = fija ? fija.precio : t.total;
+  const el = $('precio'); el.textContent = `${calculando ? '≈ ' : ''}$${total} MXN`; el.classList.toggle('calc', !!calculando);
+  const partes = [`${r.kmViaje.toFixed(1)} km`, `~${Math.max(1, Math.round(r.minViaje))} min de viaje`,
+                  `el taxi llega en ~${Math.max(3, Math.round(r.minIda) + 2)} min`];
+  const extra = [];
+  if (fija) extra.push(`tarifa fija ${fija.lugar}`);
+  else { if (t.kmVacio > 0) extra.push(`incluye ${t.kmVacio.toFixed(1)} km de traslado fuera de la ciudad`);
+         if (t.nocturno) extra.push(`incluye ${Math.round(TARIFA.RECARGO_NOCTURNO * 100)} % nocturno`); }
+  if (calculando) extra.push('calculando ruta…'); else if (r.aproximado) extra.push('distancia aproximada');
+  $('detalle').textContent = partes.join(' · ') + (extra.length ? ' — ' + extra.join(' · ') : '');
+  cotizacion = { total, kmViaje: r.kmViaje, minViaje: r.minViaje, nocturno: t.nocturno && !fija, aproximado: r.aproximado || calculando };
+}
+async function recalcular() {
+  const n = ++folio, o = puntos.origen, d = puntos.destino;
+  cotizacion = null;
+  dibujar(null, null, null);
+  if (!o || !d) {
+    $('precio').textContent = '—'; $('precio').classList.remove('calc');
+    $('detalle').textContent = !d ? 'Elige tu destino para ver el precio.' : 'Falta dónde te recogemos (GPS, escribe o toca el mapa).';
+    return;
+  }
+  const clave = [o.lat, o.lon, d.lat, d.lon].map(x => x.toFixed(5)).join(',');
+  let r = cacheRutas.get(clave);
+  if (!r) {
+    mostrarCotizacion(estimacionRecta(o, d, TARIFA.FACTOR_INSTANTANEO), true);   // precio al instante
+    await esperar(150);                       // si el cliente sigue moviendo cosas, no consultamos de más
+    if (n !== folio) return;
+    try { r = await calcularRuta(o, d); cacheGuardar(cacheRutas, clave, r); }
+    catch (e) { r = estimacionRecta(o, d); }
+    if (n !== folio) return;
+  }
+  mostrarCotizacion(r, false);
+  dibujar(r.path, o, d);
+}
+
+/* ---------------- WhatsApp ---------------- */
+const linkMapa = p => `https://www.google.com/maps?q=${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;  // solo un enlace, no usa Google en la página
+function pedir() {
+  const o = puntos.origen, d = puntos.destino;
+  const tOrigen = $('origen').value.trim(), tDestino = $('destino').value.trim();
+  if (!o && !tOrigen) {
+    mostrarMensaje('Dinos dónde te recogemos: toca 🛰️ GPS, escribe tu dirección o toca el mapa.');
+    $('origen').focus(); return;
+  }
+  const nombre = $('nombre').value.trim(), ref = $('referencia').value.trim();
+  try { localStorage.setItem('taxiPeroteDatos', JSON.stringify({ nombre, ref })); } catch (e) {}
+  const lineas = ['Hola Central TaxiPerote, necesito un taxi por favor:'];
+  if (nombre) lineas.push(`🙋 Nombre: ${nombre}`);
+  lineas.push(`📍 Recogida: ${o ? o.nombre : tOrigen}`);
+  if (o) lineas.push(`   Mapa: ${linkMapa(o)}`);
+  if (ref) lineas.push(`🏠 Referencia: ${ref}`);
+  lineas.push(`🏁 Destino: ${d ? d.nombre : (tDestino || 'Lo indico al subir')}`);
+  if (d) lineas.push(`   Mapa: ${linkMapa(d)}`);
+  if (cotizacion) {
+    const c = cotizacion;
+    lineas.push(`💰 Tarifa estimada: $${c.total} MXN (${c.kmViaje.toFixed(1)} km, ~${Math.max(1, Math.round(c.minViaje))} min${c.nocturno ? ', nocturna' : ''}${c.aproximado ? ', aprox.' : ''})`);
+  } else lineas.push('💰 Tarifa: por confirmar');
+  location.href = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(lineas.join('\n'))}`;
+}
+
+/* ---------------- Arranque ---------------- */
+function iniciar() {
+  const chips = $('chips');
+  LUGARES.forEach(l => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = l.chip; b.dataset.nombre = l.nombre;
+    b.addEventListener('click', () => fijarPunto('destino', { lat: l.lat, lon: l.lon, nombre: l.nombre }));
+    chips.appendChild(b);
+  });
+  configurarCampo('origen', 'sugOrigen');
+  configurarCampo('destino', 'sugDestino');
+  $('btnGps').addEventListener('click', () => pedirGPS(false));
+  $('btnPedir').addEventListener('click', pedir);
+  try { const g = JSON.parse(localStorage.getItem('taxiPeroteDatos') || '{}');
+        if (g.nombre) $('nombre').value = g.nombre; if (g.ref) $('referencia').value = g.ref; } catch (e) {}
+  botonesLimpiar();
+  // En computadora enfocamos el destino; en celular no, para que el teclado no tape los botones rápidos.
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) $('destino').focus();
+  pedirGPS(true);
+  iniciarMapa();
+  window.addEventListener('offline', () => mostrarMensaje('Sin internet. Puedes pedir por WhatsApp cuando vuelva la señal.'));
+  window.addEventListener('online', () => { mostrarMensaje(''); recalcular(); });
+}
+// DOMContentLoaded llega después de cargar Leaflet (script "defer").
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
+</script>
 </body>
 </html>
