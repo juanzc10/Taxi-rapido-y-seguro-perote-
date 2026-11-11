@@ -13,109 +13,189 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-:root{--wa:#25D366;--wa-dark:#1EBE57;--azul:#0A84FF;--bg:#1C1C1E;--card:#2C2C2E;--txt:#fff;--txt2:#8E8E93;--borde:#38383A;--sug:#3A3A3C;--verde:#34C759;--rojo:#FF453A;--amarillo:#FFD60A}
+:root{--wa:#25D366;--wa-dark:#1EBE57;--azul:#0A84FF;--bg:#1C1C1E;--card:#1F1F21;--campo:#2C2C2E;--txt:#fff;--txt2:#8E8E93;--borde:#38383A;--sug:#2C2C2E;--verde:#34C759;--rojo:#FF453A;
+  --hoja-h:260px;--pin-x:50%;--pin-y:40%;--arriba:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{background:var(--bg);color:var(--txt);overflow:hidden}
-.mapa{position:fixed;inset:0;z-index:1;background:#1C1C1E}
+html,body{height:100%;height:100dvh;overscroll-behavior:none}
+body{background:var(--bg);color:var(--txt);overflow:hidden;position:fixed;inset:0}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+/* Mapa a pantalla completa detrás del panel (como Uber). */
+.mapa{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100dvh;z-index:1;background:#1C1C1E}
+.leaflet-container{background:#1C1C1E}
 /* Mapa oscuro: se invierten los colores de los mosaicos de OpenStreetMap en el navegador. */
 .oscuro .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6)}
-.leaflet-control-attribution{font-size:10px;background:rgba(28,28,30,.75)!important;color:#C7C7CC!important}
+.leaflet-control-attribution{font-size:9px;background:rgba(28,28,30,.7)!important;color:#C7C7CC!important;margin-top:calc(var(--arriba) + 4px)!important}
 .leaflet-control-attribution a{color:#8EC5FF!important}
-.hoja{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--card);border-radius:24px 24px 0 0;
-  box-shadow:0 -8px 25px rgba(0,0,0,.5);max-height:78vh;display:flex;flex-direction:column}
-.hoja-scroll{overflow-y:auto;padding:14px 16px 8px}
-.hoja-pie{padding:8px 16px calc(14px + env(safe-area-inset-bottom));background:var(--card)}
-@media (min-width:700px){.hoja{left:16px;right:auto;bottom:16px;width:420px;border-radius:24px}}
-.encabezado{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.encabezado h1{font-size:1.2rem;font-weight:700}
-.modo{font-size:.7rem;color:var(--txt2)}
-.campo{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;background:var(--bg);border:1px solid var(--borde);border-radius:14px;padding:0 12px;position:relative;min-height:52px}
-.campo+.campo{margin-top:8px}
-.campo .ico{font-size:1.1rem;width:24px;text-align:center}
-.campo input{flex:1;min-width:0;border:none;background:transparent;color:var(--txt);font-size:1rem;outline:none;padding:14px 0}
-.campo input::placeholder{color:var(--txt2)}
-.campo.grande{min-height:60px;border-color:#4A4A4E}
-.campo.grande input{font-size:1.15rem;font-weight:600}
-.campo:focus-within{border-color:var(--azul)}
-.btn-ico{background:none;border:none;color:var(--txt2);font-size:1.1rem;min-width:44px;min-height:44px;cursor:pointer;display:none}
-.btn-gps{background:rgba(10,132,255,.15);color:var(--azul);border:none;border-radius:12px;padding:0 12px;min-height:40px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
-.btn-gps:disabled{opacity:.6}
-.sugerencias{flex-basis:100%;margin:0 -12px;background:var(--sug);border-radius:0 0 12px 12px;z-index:2000;max-height:240px;overflow-y:auto;display:none}
-.sug{padding:12px 14px;font-size:.95rem;border-bottom:1px solid var(--borde);cursor:pointer;min-height:48px}
-.sug:last-child{border-bottom:none}
-.sug small{display:block;color:var(--txt2);font-size:.75rem;margin-top:2px}
-.sug:active,.sug:hover{background:rgba(255,255,255,.1)}
-.sug-nota{padding:10px 14px;font-size:.8rem;color:var(--txt2)}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+
+/* ---------- Botones flotantes ---------- */
+.btn-redondo{position:fixed;z-index:1100;width:48px;height:48px;border-radius:50%;border:none;background:#2C2C2E;color:#fff;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.55);cursor:pointer}
+.btn-redondo:active{background:#3A3A3C}
+.btn-redondo svg{width:24px;height:24px}
+.atras{top:calc(var(--arriba) + 12px);left:14px}
+.gps{right:14px;bottom:calc(var(--hoja-h) + 14px);color:var(--azul)}
+.gps.buscando svg{animation:girar 1.2s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.marca{position:fixed;z-index:1100;top:calc(var(--arriba) + 12px);left:14px;background:rgba(28,28,30,.88);border-radius:22px;padding:10px 14px;font-weight:700;font-size:.95rem;box-shadow:0 3px 12px rgba(0,0,0,.5)}
+.msg{display:none;position:fixed;z-index:1200;top:calc(var(--arriba) + 70px);left:14px;right:14px;max-width:460px;margin:0 auto;font-size:.88rem;line-height:1.35;border-radius:14px;padding:12px 40px 12px 14px;
+  background:#3A1E1C;color:#FFC9C5;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.msg.info{background:#16304F;color:#CFE6FF}
+.msg button{position:absolute;top:4px;right:4px;width:36px;height:36px;border:none;background:none;font-size:1rem;color:inherit;cursor:pointer}
+
+/* ---------- Pin fijo al centro (no es un marcador de Leaflet) ---------- */
+.pin-centro{position:fixed;z-index:900;left:var(--pin-x);top:var(--pin-y);width:40px;height:56px;transform:translate(-50%,-100%);pointer-events:none;display:none}
+.modo-pin .pin-centro{display:block}
+.pin-cuerpo{position:absolute;left:0;right:0;top:0;bottom:0;transition:transform .18s ease}
+.pin-cabeza{position:absolute;left:2px;top:0;width:36px;height:36px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
+.pin-cabeza i{width:12px;height:12px;background:#111;display:block}
+.pin-centro.origen .pin-cabeza i{border-radius:50%}
+.pin-palo{position:absolute;left:18px;top:34px;width:4px;height:22px;background:#fff;border-radius:0 0 2px 2px}
+.pin-sombra{position:absolute;left:15px;bottom:-3px;width:10px;height:5px;border-radius:50%;background:rgba(0,0,0,.55);transition:transform .18s ease,opacity .18s}
+.pin-centro.levantado .pin-cuerpo{transform:translateY(-12px)}
+.pin-centro.levantado .pin-sombra{transform:scale(1.6);opacity:.35}
+
+/* ---------- Punto azul del GPS con cono de dirección ---------- */
+.gps-dot{position:relative;width:60px;height:60px}
+.gps-centro{position:absolute;left:21px;top:21px;width:18px;height:18px;border-radius:50%;background:#1A73E8;border:3px solid #fff;box-shadow:0 0 6px rgba(0,0,0,.5)}
+.gps-cono{position:absolute;left:0;top:0;width:60px;height:60px;display:none;
+  background:conic-gradient(from -30deg,rgba(26,115,232,.55),rgba(26,115,232,0) 60deg,transparent 60deg);border-radius:50%;
+  -webkit-mask:radial-gradient(circle,#000 30px,transparent 30px);mask:radial-gradient(circle,#000 30px,transparent 30px)}
+.marca-punto{width:20px;height:20px;border:3px solid #fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
+
+/* ---------- Panel inferior ---------- */
+.hoja{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--card);border-radius:20px 20px 0 0;
+  box-shadow:0 -6px 24px rgba(0,0,0,.55);max-height:calc(100vh - 90px);max-height:calc(100dvh - var(--arriba) - 80px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 16px}
+@media (min-width:700px){.hoja{left:16px;right:auto;bottom:16px;width:420px;border-radius:20px}}
+.asa{display:flex;justify-content:center;align-items:center;height:22px;cursor:pointer;touch-action:none;position:sticky;top:0;background:var(--card);z-index:3;margin:0 -16px;padding:0 16px}
+.asa span{width:40px;height:5px;border-radius:3px;background:#5A5A5E}
+.pie{position:sticky;bottom:0;background:var(--card);padding:10px 0 calc(12px + env(safe-area-inset-bottom,0px));z-index:3}
+
+/* Vista principal */
+.ruta{background:var(--campo);border-radius:14px;overflow:hidden}
+.fila{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:6px 12px;border:none;background:none;text-align:left;cursor:pointer}
+.fila+.fila{border-top:1px solid var(--borde)}
+.fila:active{background:rgba(255,255,255,.06)}
+.fila-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.fila-txt small{font-size:.7rem;color:var(--txt2);font-weight:600;letter-spacing:.02em}
+.fila-txt b{font-size:1rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fila-txt b.vacio{color:var(--txt2);font-weight:500}
+.ico-o{width:12px;height:12px;border-radius:50%;background:var(--verde);flex:0 0 auto;box-shadow:0 0 0 3px rgba(52,199,89,.25)}
+.ico-d{width:12px;height:12px;background:#fff;flex:0 0 auto}
+.fila .lupa{color:var(--txt2);display:flex}
+.fila .lupa svg{width:20px;height:20px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 0;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;background:var(--bg);color:var(--txt);border:1px solid var(--borde);border-radius:22px;padding:0 14px;min-height:44px;font-size:.92rem;cursor:pointer}
+.chip{flex:0 0 auto;background:var(--campo);border:1px solid var(--borde);border-radius:20px;padding:0 14px;min-height:40px;font-size:.9rem;cursor:pointer}
 .chip.activo{background:rgba(10,132,255,.2);border-color:var(--azul);color:#8EC5FF}
-.pista{font-size:.75rem;color:var(--txt2);margin:4px 2px 0}
-.tarifa{background:var(--bg);border:1px solid var(--borde);border-radius:14px;padding:12px 16px;margin-top:10px}
+.resumen{font-size:.82rem;color:#C7C7CC;padding:8px 2px 0;display:none}
+.extra{display:none;padding-top:6px}
+.hoja.expandida .extra{display:block}
+.hoja.expandida .chips{display:flex!important}
+.hoja.expandida .resumen{display:none!important}
+.tarifa{background:var(--campo);border-radius:14px;padding:12px 16px;margin-top:8px}
 .tarifa-fila{display:flex;justify-content:space-between;align-items:baseline}
 .tarifa-fila span{color:var(--txt2);font-weight:600;font-size:.95rem}
-.tarifa-fila strong{font-size:1.7rem;color:var(--verde)}
+.tarifa-fila strong{font-size:1.6rem;color:var(--verde)}
 .tarifa-fila strong.calc{color:#9BE7AE;opacity:.8}
 .detalle{font-size:.85rem;color:#C7C7CC;margin-top:4px}
 .nota{font-size:.72rem;color:var(--txt2);margin-top:4px}
-.msg{display:none;font-size:.85rem;border-radius:10px;padding:8px 12px;margin-top:10px;background:rgba(255,69,58,.15);color:#FF9F9A}
-.msg.info{background:rgba(10,132,255,.15);color:#8EC5FF}
-details{margin-top:10px}
-summary{cursor:pointer;color:var(--txt2);font-size:.9rem;min-height:40px;display:flex;align-items:center;list-style:none}
-summary::-webkit-details-marker{display:none}
-details .campo{margin-top:6px}
-.btn-wa{background:var(--wa);color:#fff;border:none;width:100%;min-height:58px;border-radius:16px;font-size:1.15rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 4px 15px rgba(37,211,102,.4)}
-.btn-wa:active{background:var(--wa-dark)}
-.pin{width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
-.leaflet-container{background:#1C1C1E}
+.campo{display:flex;align-items:center;gap:10px;background:var(--campo);border:1px solid transparent;border-radius:12px;padding:0 12px;min-height:50px;margin-top:8px}
+.campo:focus-within{border-color:var(--azul)}
+.campo input{flex:1;min-width:0;border:none;background:transparent;color:var(--txt);font-size:1rem;outline:none;padding:13px 0}
+.campo input::placeholder{color:var(--txt2)}
+.btn-sec{width:100%;min-height:46px;margin-top:10px;border-radius:12px;border:1px solid var(--borde);background:none;color:#C7C7CC;font-size:.92rem;cursor:pointer}
+.creditos{font-size:.7rem;color:var(--txt2);text-align:center;margin:10px 0 4px}
+.btn-principal{width:100%;min-height:56px;border:none;border-radius:14px;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  background:#E5E5EA;color:#111}
+.btn-principal:active{background:#C7C7CC}
+.btn-principal.wa{background:var(--wa);color:#fff;box-shadow:0 4px 15px rgba(37,211,102,.35)}
+.btn-principal.wa:active{background:var(--wa-dark)}
+
+/* Vista "Fija tu destino" */
+.vista-pin h2{font-size:1.45rem;font-weight:800;margin:4px 0 2px}
+.vista-pin .sub{font-size:.92rem;color:var(--txt2);margin-bottom:12px}
+.vista-pin.escribiendo h2,.vista-pin.escribiendo .sub{display:none}
+.campo-pin{display:flex;align-items:center;gap:12px;background:var(--campo);border-radius:12px;padding:0 4px 0 14px;min-height:54px;border:1px solid transparent}
+.campo-pin:focus-within{border-color:var(--azul)}
+.campo-pin .cuadro{width:12px;height:12px;background:#fff;flex:0 0 auto}
+.vista-pin.origen .campo-pin .cuadro{border-radius:50%;background:var(--verde)}
+.campo-pin input{flex:1;min-width:0;border:none;background:transparent;color:var(--txt);font-size:1.02rem;font-weight:500;outline:none;padding:15px 0;text-overflow:ellipsis}
+.campo-pin input::placeholder{color:var(--txt2);font-weight:400}
+.campo-pin button{width:46px;height:46px;border:none;background:none;color:#C7C7CC;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.campo-pin button svg{width:22px;height:22px}
+.sugerencias{background:var(--sug);border-radius:12px;margin-top:6px;max-height:42vh;max-height:42dvh;overflow-y:auto;display:none}
+.sug{padding:12px 14px;font-size:.95rem;border-bottom:1px solid var(--borde);cursor:pointer;min-height:48px}
+.sug:last-child{border-bottom:none}
+.sug small{display:block;color:var(--txt2);font-size:.75rem;margin-top:2px}
+.sug:active,.sug:hover{background:rgba(255,255,255,.08)}
+.sug-nota{padding:10px 14px;font-size:.8rem;color:var(--txt2)}
 </style>
 </head>
 <body>
 <div id="mapa" class="mapa"></div>
 
+<!-- Pin fijo en el centro del mapa (modo "Fija tu destino") -->
+<div class="pin-centro" id="pinCentro" aria-hidden="true">
+  <div class="pin-sombra"></div>
+  <div class="pin-cuerpo"><div class="pin-cabeza"><i></i></div><div class="pin-palo"></div></div>
+</div>
+
+<div class="marca" id="marca">🚖 TaxiPerote</div>
+<button type="button" class="btn-redondo atras" id="btnAtras" aria-label="Regresar" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
+</button>
+<button type="button" class="btn-redondo gps" id="btnGps" aria-label="Usar mi ubicación (GPS)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+</button>
+<div class="msg" id="mensaje" role="status"><span id="mensajeTxt"></span><button type="button" id="cerrarMensaje" aria-label="Cerrar aviso">✕</button></div>
+
 <div class="hoja" id="hoja">
-  <div class="hoja-scroll">
-    <div class="encabezado">
-      <h1>🚖 TaxiPerote</h1>
-      <span class="modo">Mapa gratuito · OpenStreetMap</span>
-    </div>
+  <div class="asa" id="asa" role="button" tabindex="0" aria-label="Mostrar u ocultar más opciones"><span></span></div>
 
-    <div class="campo" id="campoOrigen">
-      <span class="ico">📍</span>
-      <input id="origen" type="text" autocomplete="off" enterkeyhint="search" placeholder="Buscando tu ubicación…" aria-label="Punto de recogida">
-      <button type="button" class="btn-ico" id="limpiarOrigen" aria-label="Borrar recogida">✕</button>
-      <button type="button" class="btn-gps" id="btnGps">🛰️ GPS</button>
-      <div class="sugerencias" id="sugOrigen"></div>
+  <!-- Vista principal: recogida, destino y botón -->
+  <section id="vistaPrincipal">
+    <div class="ruta">
+      <button type="button" class="fila" id="filaOrigen">
+        <span class="ico-o"></span>
+        <span class="fila-txt"><small>RECOGIDA</small><b id="txtOrigen" class="vacio">Buscando tu ubicación…</b></span>
+      </button>
+      <button type="button" class="fila" id="filaDestino">
+        <span class="ico-d"></span>
+        <span class="fila-txt"><small>DESTINO</small><b id="txtDestino" class="vacio">¿A dónde vas?</b></span>
+        <span class="lupa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span>
+      </button>
     </div>
-
-    <div class="campo grande" id="campoDestino">
-      <span class="ico">🏁</span>
-      <input id="destino" type="text" autocomplete="off" enterkeyhint="search" placeholder="¿A dónde vas?" aria-label="Destino">
-      <button type="button" class="btn-ico" id="limpiarDestino" aria-label="Borrar destino">✕</button>
-      <div class="sugerencias" id="sugDestino"></div>
-    </div>
-
     <div class="chips" id="chips"></div>
-    <p class="pista" id="pista">Toca un destino frecuente, escríbelo o toca el mapa.</p>
+    <div class="resumen" id="resumen"></div>
 
-    <div class="msg" id="mensaje" role="status"></div>
-
-    <div class="tarifa">
-      <div class="tarifa-fila"><span>Tarifa estimada</span><strong id="precio">—</strong></div>
-      <div class="detalle" id="detalle">Elige tu destino para ver el precio.</div>
-      <div class="nota">Precio aproximado por kilómetros. El conductor lo confirma por WhatsApp.</div>
+    <div class="extra" id="extra">
+      <div class="tarifa">
+        <div class="tarifa-fila"><span>Tarifa estimada</span><strong id="precio">—</strong></div>
+        <div class="detalle" id="detalle">Elige tu destino para ver el precio.</div>
+        <div class="nota">Precio aproximado por kilómetros y minutos. El conductor lo confirma por WhatsApp.</div>
+      </div>
+      <div class="campo"><span>🙋</span><input id="nombre" type="text" autocomplete="name" placeholder="Tu nombre (opcional)" maxlength="60"></div>
+      <div class="campo"><span>🏠</span><input id="referencia" type="text" placeholder="Referencia: casa azul, frente a la tienda…" maxlength="120"></div>
+      <button type="button" class="btn-sec" id="btnSinDestino">💬 Pedir sin indicar destino</button>
+      <p class="creditos">Mapa gratuito · OpenStreetMap</p>
     </div>
+    <div class="pie"><button type="button" class="btn-principal" id="btnPedir">¿A dónde vas?</button></div>
+  </section>
 
-    <details id="extras">
-      <summary>➕ Tu nombre y una referencia (opcional)</summary>
-      <div class="campo"><span class="ico">🙋</span><input id="nombre" type="text" autocomplete="name" placeholder="Tu nombre" maxlength="60"></div>
-      <div class="campo"><span class="ico">🏠</span><input id="referencia" type="text" placeholder="Referencia: casa azul, frente a la tienda…" maxlength="120"></div>
-    </details>
-  </div>
-  <div class="hoja-pie">
-    <button type="button" class="btn-wa" id="btnPedir">💬 Pedir taxi por WhatsApp</button>
-  </div>
+  <!-- Vista "Fija tu destino / punto de recogida" -->
+  <section id="vistaPin" class="vista-pin" hidden>
+    <h2 id="pinTitulo">Fija tu destino</h2>
+    <p class="sub">Arrastra el mapa para mover el marcador</p>
+    <div class="campo-pin">
+      <span class="cuadro"></span>
+      <input id="pinInput" type="text" autocomplete="off" enterkeyhint="search" placeholder="¿A dónde vas?" aria-label="Dirección">
+      <button type="button" id="pinBuscar" aria-label="Buscar dirección"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+    </div>
+    <div class="sugerencias" id="sugPin"></div>
+    <div class="pie"><button type="button" class="btn-principal" id="btnConfirmar">Confirmar destino</button></div>
+  </section>
 </div>
 
 <script>
@@ -126,13 +206,14 @@ details .campo{margin-top:6px}
 
 /* ---------------- CONFIGURACIÓN DE PRECIOS — Juan: cambia aquí (MXN) ---------------- */
 const TARIFA = {
-  BANDERAZO: 25,          // Lo que se cobra nomás por subir.
-  PRECIO_KM: 9,           // Pesos por km del viaje (recogida → destino).
+  // Cobro estilo Uber: tarifa base + km del viaje + minutos del viaje (recogida → destino).
+  BANDERAZO: 20,          // Tarifa base por subir.
+  PRECIO_KM: 7,           // Pesos por km del viaje.
+  PRECIO_MIN: 1.5,        // Pesos por minuto del viaje.
   MINIMO: 40,             // Ningún viaje cuesta menos que esto.
-  // Km "en vacío": de la base a la recogida y del destino de regreso a la base.
-  // Los primeros KM_VACIO_GRATIS de cada tramo no se cobran (zona urbana).
+  // Km "en vacío" (base → recogida y regreso a la base). Como Uber: no se cobran (0).
   KM_VACIO_GRATIS: 3,
-  PRECIO_KM_VACIO: 4.5,   // Pon 0 para no cobrar km en vacío.
+  PRECIO_KM_VACIO: 0,
   RECARGO_NOCTURNO: 0.20, // 0.20 = 20 % más. Pon 0 para quitarlo.
   HORA_INICIO_NOCHE: 22,  // 22:00
   HORA_FIN_NOCHE: 6,      // hasta 06:00
@@ -177,11 +258,12 @@ function esHorarioNocturno(f) {
   const h = f.getHours(), i = TARIFA.HORA_INICIO_NOCHE, n = TARIFA.HORA_FIN_NOCHE;
   return i > n ? (h >= i || h < n) : (h >= i && h < n);
 }
-function calcularTarifaKm(kmViaje, kmIda, kmRegreso, fecha) {
+function calcularTarifaKm(kmViaje, kmIda, kmRegreso, fecha, minViaje = 0) {
   kmViaje = Math.max(0, Number(kmViaje) || 0);
+  minViaje = Math.max(0, Number(minViaje) || 0);
   const vacio = Math.max(0, (Number(kmIda) || 0) - TARIFA.KM_VACIO_GRATIS)
               + Math.max(0, (Number(kmRegreso) || 0) - TARIFA.KM_VACIO_GRATIS);
-  let total = TARIFA.BANDERAZO + kmViaje * TARIFA.PRECIO_KM + vacio * TARIFA.PRECIO_KM_VACIO;
+  let total = TARIFA.BANDERAZO + kmViaje * TARIFA.PRECIO_KM + minViaje * TARIFA.PRECIO_MIN + vacio * TARIFA.PRECIO_KM_VACIO;
   const nocturno = !!fecha && TARIFA.RECARGO_NOCTURNO > 0 && esHorarioNocturno(fecha);
   if (nocturno) total *= 1 + TARIFA.RECARGO_NOCTURNO;
   total = Math.round(Math.max(TARIFA.MINIMO, total) / TARIFA.REDONDEO) * TARIFA.REDONDEO;
@@ -312,10 +394,10 @@ async function calcularRuta(o, d) {
 /* ======================= Mapa (Leaflet) ======================= */
 let mapa = null, linea = null;
 const marcas = {};
-function pinHTML(color) { return `<div class="pin" style="background:${color}"></div>`; }
+const esCompu = () => window.matchMedia('(min-width: 700px)').matches;
 function iniciarMapa() {
   if (typeof L === 'undefined') {
-    $('mapa').innerHTML = '<p style="padding:20px;color:#8E8E93">No se pudo cargar el mapa. Aún puedes pedir tu taxi por WhatsApp.</p>';
+    $('mapa').innerHTML = '<p style="padding:90px 20px;color:#8E8E93">No se pudo cargar el mapa. Aún puedes pedir tu taxi por WhatsApp.</p>';
     return;
   }
   if (SERVICIOS.MAPA_OSCURO) $('mapa').classList.add('oscuro');
@@ -331,156 +413,369 @@ function iniciarMapa() {
   }).addTo(mapa);
   L.circleMarker([BASE.lat, BASE.lon], { radius: 7, color: '#FFD60A', fillColor: '#FFD60A', fillOpacity: .9 }).addTo(mapa).bindPopup('<b>Base TaxiPerote</b>');
   mapa.on('click', e => alTocarMapa({ lat: e.latlng.lat, lon: e.latlng.lng }));
-  ['origen', 'destino'].forEach(t => marcar(t, puntos[t]));
+  mapa.on('movestart zoomstart', alEmpezarMover);
+  mapa.on('moveend', alTerminarMover);
+  refrescarMarcas();
+  if (ultimoGPS) pintarPuntoAzul(ultimoGPS);
+  const inicio = puntos.origen || ultimoGPS;
+  if (inicio) centrar(inicio, 16);
 }
 function marcar(tipo, p) {
   if (!mapa) return;
   const m = marcas[tipo];
   if (!p) { if (m) { mapa.removeLayer(m); delete marcas[tipo]; } return; }
   if (m) { m.setLatLng([p.lat, p.lon]); return; }
-  const icon = L.divIcon({ className: '', html: pinHTML(tipo === 'origen' ? '#34C759' : '#FF453A'), iconSize: [20, 20], iconAnchor: [10, 10] });
-  const mk = L.marker([p.lat, p.lon], { icon, draggable: true, autoPan: true }).addTo(mapa);
-  mk.on('dragend', () => { const ll = mk.getLatLng(); alArrastrar(tipo, { lat: ll.lat, lon: ll.lng }); });
+  const estilo = tipo === 'origen' ? 'background:#34C759;border-radius:50%' : 'background:#111';
+  const icon = L.divIcon({ className: '', html: `<div class="marca-punto" style="${estilo}"></div>`, iconSize: [20, 20], iconAnchor: [10, 10] });
+  const mk = L.marker([p.lat, p.lon], { icon, keyboard: false }).addTo(mapa);
+  mk.on('click', () => entrarPin(tipo));     // tocar un punto lo vuelve a editar
   marcas[tipo] = mk;
 }
+function refrescarMarcas() { ['origen', 'destino'].forEach(t => marcar(t, modoPin ? (modoPin === t ? null : puntos[t]) : puntos[t])); }
 function dibujar(path, o, d) {
   if (!mapa) return;
   if (linea) { mapa.removeLayer(linea); linea = null; }
-  if (!o || !d) return;
+  if (!o || !d || modoPin) return;
   linea = path
     ? L.polyline(path.map(p => [p.lat, p.lon]), { color: '#0A84FF', weight: 5, opacity: .9 })
     : L.polyline([[o.lat, o.lon], [d.lat, d.lon]], { color: '#0A84FF', weight: 4, dashArray: '8 8' });
   linea.addTo(mapa);
-  mapa.fitBounds(linea.getBounds(), { paddingTopLeft: [30, 40], paddingBottomRight: [30, $('hoja').offsetHeight + 20], maxZoom: 16 });
+  const pad = esCompu() ? { paddingTopLeft: [460, 70], paddingBottomRight: [40, 40] }
+                        : { paddingTopLeft: [30, 80], paddingBottomRight: [30, $('hoja').offsetHeight + 30] };
+  mapa.fitBounds(linea.getBounds(), { ...pad, maxZoom: 16 });
 }
-function centrar(p, z = 16) { if (mapa) mapa.setView([p.lat, p.lon], z); }
+// Lugar de la pantalla donde queda la punta del pin: centro del mapa que se ve arriba del panel.
+function posicionPin() {
+  const W = window.innerWidth, H = window.innerHeight, h = $('hoja').offsetHeight;
+  if (esCompu()) return { x: Math.round((W + 436) / 2), y: Math.round(H / 2 + 24) };
+  return { x: Math.round(W / 2), y: Math.round(Math.max(110, (H - h) / 2 + 24)) };
+}
+let pinPos = { x: 0, y: 0 }, ajustandoPin = false;
+function acomodarPin() {
+  const h = $('hoja').offsetHeight;
+  document.documentElement.style.setProperty('--hoja-h', (esCompu() ? 0 : h) + 'px');
+  if (modoPin && document.activeElement === $('pinInput')) return;   // con el teclado abierto no se mueve
+  const antes = pinPos;
+  pinPos = posicionPin();
+  document.documentElement.style.setProperty('--pin-x', pinPos.x + 'px');
+  document.documentElement.style.setProperty('--pin-y', pinPos.y + 'px');
+  // Si el panel cambió de tamaño en modo pin, mueve el mapa junto con el pin para no cambiar el punto elegido.
+  if (modoPin && mapa && (antes.x !== pinPos.x || antes.y !== pinPos.y) && antes.y) {
+    ajustandoPin = true;
+    mapa.panBy([antes.x - pinPos.x, antes.y - pinPos.y], { animate: false });
+    ajustandoPin = false;
+  }
+}
+// Centra el mapa para que el punto quede justo bajo el pin (o arriba del panel).
+function centrar(p, z) {
+  if (!mapa) return;
+  const s = mapa.getSize(), pos = posicionPin();
+  const previo = ajustandoPin;
+  ajustandoPin = true;    // los dos movimientos cuentan como uno solo
+  mapa.setView([p.lat, p.lon], z || mapa.getZoom(), { animate: false });
+  mapa.panBy([s.x / 2 - pos.x, s.y / 2 - pos.y], { animate: false });
+  ajustandoPin = previo;
+  if (!previo) alTerminarMover();
+}
+function puntoBajoPin() {
+  const ll = mapa.containerPointToLatLng(L.point(pinPos.x, pinPos.y));
+  return { lat: ll.lat, lon: ll.lng };
+}
 
-/* ======================= Estado y lógica ======================= */
+/* ======================= Estado ======================= */
 const puntos = { origen: null, destino: null };
-let cotizacion = null, folio = 0;
+let cotizacion = null, folio = 0, modoPin = null, ultimoGPS = null, estadoGPS = 'buscando';
 
 function mostrarMensaje(t, tipo) {
   const el = $('mensaje'); if (!t) { el.style.display = 'none'; return; }
-  el.textContent = t; el.className = 'msg' + (tipo === 'info' ? ' info' : ''); el.style.display = 'block';
+  $('mensajeTxt').textContent = t; el.className = 'msg' + (tipo === 'info' ? ' info' : ''); el.style.display = 'block';
 }
-function botonesLimpiar() {
-  ['origen', 'destino'].forEach(c => { $(c === 'origen' ? 'limpiarOrigen' : 'limpiarDestino').style.display = $(c).value ? 'block' : 'none'; });
-  $('btnGps').style.display = puntos.origen && puntos.origen.gps ? 'none' : 'block';
+function coordTxt(p) { return `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`; }
+function pintarFilas() {
+  const o = puntos.origen, d = puntos.destino, to = $('txtOrigen'), td = $('txtDestino');
+  to.textContent = o ? o.nombre : estadoGPS === 'buscando' ? 'Buscando tu ubicación…' : '¿Dónde te recogemos? Toca aquí';
+  to.classList.toggle('vacio', !o);
+  td.textContent = d ? d.nombre : '¿A dónde vas?';
+  td.classList.toggle('vacio', !d);
+  document.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('activo', !!d && d.nombre === ch.dataset.nombre));
+  $('chips').style.display = d ? 'none' : 'flex';      // con destino elegido, el panel queda más chico
+  pintarBoton();
 }
-function marcarChip() {
-  document.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('activo', !!puntos.destino && puntos.destino.nombre === ch.dataset.nombre));
+function pintarBoton() {
+  const b = $('btnPedir');
+  b.classList.remove('wa');
+  if (!puntos.origen) b.textContent = 'Fijar punto de recogida';
+  else if (!puntos.destino) b.textContent = 'Elegir destino';
+  else {
+    b.classList.add('wa');
+    b.textContent = cotizacion ? `💬 Pedir taxi · ${cotizacion.aproximado && $('precio').classList.contains('calc') ? '≈ ' : ''}$${cotizacion.total}` : '💬 Pedir taxi';
+  }
 }
-function fijarPunto(tipo, p, { centrarMapa = false } = {}) {
+function fijarPunto(tipo, p) {
   puntos[tipo] = p;
-  $(tipo).value = p ? p.nombre : '';
-  marcar(tipo, p);
-  if (p && centrarMapa && !(puntos.origen && puntos.destino)) centrar(p);
-  botonesLimpiar(); marcarChip();
-  $('pista').textContent = !puntos.origen ? 'Marca dónde te recogemos: usa el GPS, escribe o toca el mapa.'
-    : !puntos.destino ? 'Toca un destino frecuente, escríbelo o toca el mapa.'
-    : 'Listo. Puedes mover los pines del mapa para ajustar.';
+  refrescarMarcas(); pintarFilas();
   recalcular();
 }
 async function ponerNombre(tipo, p, sufijo = '') {
   const n = await nombreDeCoordenadas(p);
   if (n && puntos[tipo] && puntos[tipo].lat === p.lat && puntos[tipo].lon === p.lon) {
-    puntos[tipo].nombre = n + sufijo; $(tipo).value = puntos[tipo].nombre; botonesLimpiar();
+    puntos[tipo].nombre = n + sufijo; pintarFilas();
   }
 }
 function alTocarMapa(p) {
-  const tipo = !puntos.origen ? 'origen' : 'destino';
-  fijarPunto(tipo, { ...p, nombre: `Punto en el mapa (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})` });
-  ponerNombre(tipo, p);
-}
-function alArrastrar(tipo, p) {
-  const gps = tipo === 'origen' && puntos.origen && puntos.origen.gps;
-  fijarPunto(tipo, { ...p, nombre: `Punto ajustado (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})` });
-  ponerNombre(tipo, p, gps ? ' (ajustado)' : '');
+  if (modoPin) { centrar(p); return; }                 // en modo pin, tocar el mapa mueve el marcador ahí
+  entrarPin(!puntos.origen ? 'origen' : 'destino', p);
 }
 
-/* ---------------- GPS ---------------- */
-function pedirGPS(automatico) {
-  const btn = $('btnGps');
-  if (!navigator.geolocation) {
-    $('origen').placeholder = '¿Dónde te recogemos? (calle o colonia)';
-    if (!automatico) mostrarMensaje('Tu celular no permite usar el GPS aquí. Escribe tu dirección o toca el mapa.');
-    return;
-  }
-  btn.disabled = true; btn.textContent = '🛰️ …';
-  $('origen').placeholder = 'Buscando tu ubicación…';
-  navigator.geolocation.getCurrentPosition(pos => {
-    btn.disabled = false; btn.textContent = '🛰️ GPS';
-    const p = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-    fijarPunto('origen', { ...p, nombre: `Mi ubicación (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})`, gps: true }, { centrarMapa: true });
-    mostrarMensaje('');
-    ponerNombre('origen', p, ' (GPS)');
-  }, err => {
-    btn.disabled = false; btn.textContent = '🛰️ GPS';
-    $('origen').placeholder = '¿Dónde te recogemos? (calle o colonia)';
-    const m = { 1: 'No diste permiso de ubicación. Toca 🛰️ GPS para intentarlo de nuevo, o escribe dónde te recogemos.',
-                2: 'No se encontró tu ubicación. Escribe dónde te recogemos o toca el mapa.',
-                3: 'El GPS tardó demasiado. Toca 🛰️ GPS otra vez o escribe tu dirección.' };
-    mostrarMensaje(m[err.code] || m[2]);
-    botonesLimpiar();
-  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+/* ======================= Modo pin: "Fija tu destino" ======================= */
+const TEXTOS_PIN = {
+  origen:  { titulo: 'Fija tu punto de recogida', boton: 'Confirmar recogida', placeholder: '¿Dónde te recogemos?' },
+  destino: { titulo: 'Fija tu destino',            boton: 'Confirmar destino',  placeholder: '¿A dónde vas?' }
+};
+let pinNombre = null, pinElegido = null, pinTimer = null, pinFolio = 0, pinEsDireccion = false;
+function entrarPin(tipo, enPunto) {
+  modoPin = tipo;
+  const t = TEXTOS_PIN[tipo];
+  document.body.classList.add('modo-pin');
+  $('hoja').classList.remove('expandida');
+  $('vistaPrincipal').hidden = true; $('vistaPin').hidden = false;
+  $('vistaPin').classList.toggle('origen', tipo === 'origen');
+  $('pinCentro').classList.toggle('origen', tipo === 'origen');
+  $('pinTitulo').textContent = t.titulo; $('btnConfirmar').textContent = t.boton;
+  $('pinInput').placeholder = t.placeholder; $('pinInput').value = '';
+  $('sugPin').style.display = 'none';
+  $('btnAtras').hidden = false; $('marca').hidden = true;
+  mostrarMensaje('');
+  refrescarMarcas(); dibujar(null);
+  acomodarPin();
+  // Dónde arranca el pin: el punto actual, o tu ubicación GPS, o tu recogida, o la base.
+  const inicio = enPunto || puntos[tipo] || (tipo === 'origen' ? ultimoGPS : (ultimoGPS || puntos.origen)) || puntos.origen || BASE;
+  pinElegido = puntos[tipo] && !enPunto ? { ...puntos[tipo] } : null;
+  if (mapa) centrar(inicio, Math.max(mapa.getZoom(), tipo === 'origen' ? 17 : 16));
+  else { pinNombre = puntos[tipo] ? puntos[tipo].nombre : null; $('pinInput').value = pinNombre || ''; }
+}
+function salirPin() {
+  if (!modoPin) return;
+  clearTimeout(pinTimer); pinFolio++;
+  modoPin = null;
+  document.body.classList.remove('modo-pin');
+  $('pinInput').blur();
+  $('vistaPin').hidden = true; $('vistaPin').classList.remove('escribiendo'); $('vistaPrincipal').hidden = false;
+  $('btnAtras').hidden = true; $('marca').hidden = false;
+  $('pinCentro').classList.remove('levantado');
+  refrescarMarcas(); pintarFilas();
+  requestAnimationFrame(() => { acomodarPin(); recalcular(); if (!(puntos.origen && puntos.destino) && (puntos.origen || puntos.destino)) centrar(puntos.destino || puntos.origen); });
+}
+function alEmpezarMover() {
+  if (!modoPin || ajustandoPin) return;
+  clearTimeout(pinTimer); pinFolio++;
+  $('pinCentro').classList.add('levantado');
+  const input = $('pinInput');
+  if (document.activeElement !== input) { input.value = ''; input.placeholder = 'Buscando dirección…'; pinEsDireccion = false; }
+}
+function alTerminarMover() {
+  if (!modoPin || !mapa || ajustandoPin) return;
+  $('pinCentro').classList.remove('levantado');
+  clearTimeout(pinTimer);
+  const c = puntoBajoPin(), n = ++pinFolio, input = $('pinInput');
+  // Si el punto viene de una búsqueda o de un botón, ya sabemos su nombre.
+  if (pinElegido && distanciaRectaKm(c, pinElegido) < 0.015) { ponerTextoPin(pinElegido.nombre); return; }
+  pinElegido = null; pinNombre = null;
+  if (document.activeElement !== input) { input.value = ''; input.placeholder = 'Buscando dirección…'; }
+  // Espera ~600 ms a que el cliente deje de mover el mapa (y la cola respeta 1 consulta/seg en Nominatim).
+  pinTimer = setTimeout(async () => {
+    const nombre = await nombreDeCoordenadas(c);
+    if (n !== pinFolio || !modoPin) return;
+    ponerTextoPin(nombre || `Punto en el mapa (${coordTxt(c)})`);
+  }, 600);
+}
+function ponerTextoPin(nombre) {
+  pinNombre = nombre;
+  const input = $('pinInput');
+  input.placeholder = TEXTOS_PIN[modoPin].placeholder;
+  if (document.activeElement !== input) { input.value = nombre; pinEsDireccion = true; }
+}
+function confirmarPin() {
+  if (!modoPin) return;
+  const tipo = modoPin, c = mapa ? puntoBajoPin() : (puntos[tipo] || pinElegido);
+  if (!c) { mostrarMensaje('No se pudo leer el mapa. Escribe la dirección.'); return; }
+  const cercaGPS = tipo === 'origen' && ultimoGPS && distanciaRectaKm(c, ultimoGPS) < 0.03;
+  let nombre = pinNombre;
+  const pendiente = !nombre;
+  if (!nombre) nombre = `${tipo === 'origen' ? 'Punto de recogida' : 'Destino'} (${coordTxt(c)})`;
+  const p = { lat: c.lat, lon: c.lon, nombre: nombre + (cercaGPS && !/\(GPS\)$/.test(nombre) ? ' (GPS)' : ''), gps: !!cercaGPS };
+  if (pinElegido && distanciaRectaKm(c, pinElegido) < 0.015) { p.lat = pinElegido.lat; p.lon = pinElegido.lon; }
+  salirPin();
+  fijarPunto(tipo, p);
+  if (pendiente) ponerNombre(tipo, p, cercaGPS ? ' (GPS)' : '');
+  // Flujo como Uber: confirmada la recogida, sigue el destino.
+  if (tipo === 'origen' && !puntos.destino) setTimeout(() => entrarPin('destino'), 50);
 }
 
-/* ---------------- Búsqueda mientras escribe ---------------- */
-const temporizador = {};
+/* ---------- Búsqueda escrita dentro del modo pin (Photon mientras escribe) ---------- */
+let tempBusqueda = null;
 function sinAcentos(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
-function configurarCampo(tipo, idSug) {
-  const input = $(tipo), cont = $(idSug);
-  input.addEventListener('input', () => {
-    if (puntos[tipo]) { puntos[tipo] = null; marcar(tipo, null); marcarChip(); recalcular(); }
-    botonesLimpiar();
-    const val = input.value.trim(); clearTimeout(temporizador[tipo]);
-    if (!val) { cont.style.display = 'none'; return; }
-    const locales = LUGARES.filter(l => sinAcentos(l.nombre).includes(sinAcentos(val)));
-    pintar(tipo, cont, locales, val.length >= 3 ? 'Buscando…' : '');
-    if (val.length < 3) return;
-    temporizador[tipo] = setTimeout(async () => {
-      try {
-        const r = await buscarPhoton(val);
-        if (input.value.trim() !== val || puntos[tipo]) return;
-        pintar(tipo, cont, locales.concat(r), r.length || locales.length ? '' : 'Sin resultados. Toca Enter para buscar más, o toca el mapa.');
-      } catch (e) {
-        if (e.name === 'AbortError' || input.value.trim() !== val || puntos[tipo]) return;
-        pintar(tipo, cont, locales, 'La búsqueda rápida no respondió. Toca Enter para buscar, o toca el mapa.');
-      }
-    }, 300);
-  });
-  input.addEventListener('keydown', async e => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    const s = cont.querySelector('.sug'); if (s) { s.click(); return; }
-    const val = input.value.trim(); if (val.length < 3) return;
-    pintar(tipo, cont, [], 'Buscando…');
+function configurarBusquedaPin() {
+  const input = $('pinInput'), cont = $('sugPin'), vista = $('vistaPin');
+  const elegir = item => {
+    clearTimeout(tempBusqueda); cont.style.display = 'none';
+    pinElegido = { lat: item.lat, lon: item.lon, nombre: item.nombre };
+    input.value = item.nombre; pinEsDireccion = true; pinNombre = item.nombre;
+    vista.classList.remove('escribiendo');
+    input.blur();
+    setTimeout(() => { acomodarPin(); centrar(pinElegido, Math.max(mapa ? mapa.getZoom() : 16, 16)); if (!mapa) ponerTextoPin(item.nombre); }, 60);
+  };
+  const buscarYa = async () => {
+    const val = input.value.trim(); if (val.length < 3) { input.focus(); return; }
+    const s = cont.querySelector('.sug'); if (s && cont.style.display === 'block') { s.click(); return; }
+    pintar(cont, [], 'Buscando…', elegir);
     try {   // búsqueda explícita: Photon y, si no hay nada, Nominatim
       let r = []; try { r = await buscarPhoton(val); } catch (err) {}
       if (!r.length) r = await buscarNominatim(val);
       if (input.value.trim() !== val) return;
-      pintar(tipo, cont, r, r.length ? '' : 'Sin resultados. Prueba otra calle o toca el mapa.');
-    } catch (err) { pintar(tipo, cont, [], 'No se pudo buscar (¿sin señal?). Toca el mapa para marcar el punto.'); }
+      pintar(cont, r, r.length ? '' : 'Sin resultados. Prueba otra calle o mueve el mapa.', elegir);
+    } catch (err) { pintar(cont, [], 'No se pudo buscar (¿sin señal?). Mueve el mapa para marcar el punto.', elegir); }
+  };
+  input.addEventListener('focus', () => {
+    vista.classList.add('escribiendo');
+    input.placeholder = 'Escribe calle, colonia o lugar';
+    if (pinEsDireccion) { input.value = ''; pinEsDireccion = false; }   // campo limpio para escribir; al salir vuelve la dirección
+    if (cont.querySelector('.sug')) cont.style.display = 'block';
   });
-  input.addEventListener('blur', () => setTimeout(() => { cont.style.display = 'none'; }, 200));
-  input.addEventListener('focus', () => { if (cont.querySelector('.sug')) cont.style.display = 'block'; });
-  $(tipo === 'origen' ? 'limpiarOrigen' : 'limpiarDestino').addEventListener('click', () => { fijarPunto(tipo, null); input.focus(); });
+  input.addEventListener('blur', () => setTimeout(() => {
+    if (document.activeElement === input) return;
+    cont.style.display = 'none'; vista.classList.remove('escribiendo');
+    if (!modoPin) return;
+    input.placeholder = pinNombre ? TEXTOS_PIN[modoPin].placeholder : 'Buscando dirección…';
+    input.value = pinNombre || ''; pinEsDireccion = !!pinNombre;     // si no eligió nada, vuelve la dirección del pin
+    acomodarPin();
+  }, 200));
+  input.addEventListener('input', () => {
+    pinEsDireccion = false;
+    const val = input.value.trim(); clearTimeout(tempBusqueda);
+    if (!val) { cont.style.display = 'none'; return; }
+    const locales = LUGARES.filter(l => sinAcentos(l.nombre).includes(sinAcentos(val)));
+    pintar(cont, locales, val.length >= 3 ? 'Buscando…' : '', elegir);
+    if (val.length < 3) return;
+    tempBusqueda = setTimeout(async () => {
+      try {
+        const r = await buscarPhoton(val);
+        if (input.value.trim() !== val) return;
+        pintar(cont, locales.concat(r), r.length || locales.length ? '' : 'Sin resultados. Toca 🔍 para buscar más, o mueve el mapa.', elegir);
+      } catch (e) {
+        if (e.name === 'AbortError' || input.value.trim() !== val) return;
+        pintar(cont, locales, 'La búsqueda rápida no respondió. Toca 🔍 para buscar, o mueve el mapa.', elegir);
+      }
+    }, 300);
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); buscarYa(); } if (e.key === 'Escape') input.blur(); });
+  $('pinBuscar').addEventListener('mousedown', e => e.preventDefault());
+  $('pinBuscar').addEventListener('click', () => {
+    if (document.activeElement !== input || pinEsDireccion) { input.focus(); return; }
+    buscarYa();
+  });
 }
-function pintar(tipo, cont, lista, nota) {
+function pintar(cont, lista, nota, alElegir) {
   cont.innerHTML = '';
   lista.forEach(item => {
     const div = document.createElement('div'); div.className = 'sug'; div.textContent = item.nombre;
     if (item.detalle) { const s = document.createElement('small'); s.textContent = item.detalle; div.appendChild(s); }
     div.addEventListener('mousedown', e => e.preventDefault());
-    div.addEventListener('click', () => {
-      clearTimeout(temporizador[tipo]); cont.style.display = 'none'; $(tipo).blur();
-      fijarPunto(tipo, { lat: item.lat, lon: item.lon, nombre: item.nombre }, { centrarMapa: true });
-    });
+    div.addEventListener('click', () => alElegir(item));
     cont.appendChild(div);
   });
   if (nota) { const n = document.createElement('div'); n.className = 'sug-nota'; n.textContent = nota; cont.appendChild(n); }
   cont.style.display = cont.childElementCount ? 'block' : 'none';
-  if (cont.childElementCount) cont.scrollIntoView({ block: 'nearest' });
+}
+
+/* ---------------- GPS ---------------- */
+function avisoPermisoGPS() {
+  const ua = navigator.userAgent || '';
+  if (/FBAN|FBAV|Instagram|WhatsApp|Line\//i.test(ua))
+    return 'Estás en el navegador de WhatsApp/Facebook. Toca ⋮ o ••• y elige "Abrir en Chrome" o "Abrir en Safari" para usar el GPS. O mueve el mapa hasta donde te recogemos.';
+  if (/iPhone|iPad/i.test(ua))
+    return 'El GPS está bloqueado. En tu iPhone ve a Ajustes › Privacidad › Localización (actívala) y en Safari permite la ubicación para este sitio. O mueve el mapa hasta donde te recogemos.';
+  return 'El GPS está bloqueado. Toca el candado 🔒 junto a la dirección de la página › Permisos › Ubicación › Permitir, y vuelve a tocar el botón de ubicación. O mueve el mapa hasta donde te recogemos.';
+}
+let puntoAzul = null, circuloPrecision = null, rumbo = null, vigilando = false;
+function pintarPuntoAzul(pos) {
+  ultimoGPS = { lat: pos.lat, lon: pos.lon, precision: pos.precision };
+  if (!mapa) return;
+  const ll = [pos.lat, pos.lon];
+  if (!puntoAzul) {
+    const icon = L.divIcon({ className: '', html: '<div class="gps-dot"><div class="gps-cono"></div><div class="gps-centro"></div></div>', iconSize: [60, 60], iconAnchor: [30, 30] });
+    puntoAzul = L.marker(ll, { icon, interactive: false, keyboard: false, zIndexOffset: -100 }).addTo(mapa);
+    circuloPrecision = L.circle(ll, { radius: pos.precision || 30, color: '#1A73E8', weight: 1, opacity: .4, fillOpacity: .1, interactive: false }).addTo(mapa);
+  } else { puntoAzul.setLatLng(ll); circuloPrecision.setLatLng(ll).setRadius(pos.precision || 30); }
+  actualizarCono();
+}
+function actualizarCono() {
+  const el = puntoAzul && puntoAzul.getElement && puntoAzul.getElement();
+  const cono = el && el.querySelector('.gps-cono'); if (!cono) return;
+  if (rumbo == null) { cono.style.display = 'none'; return; }
+  cono.style.display = 'block'; cono.style.transform = `rotate(${Math.round(rumbo)}deg)`;
+}
+// Brújula del celular para el cono de dirección (opcional: si no hay, solo se ve el punto azul).
+let brujulaLista = false;
+function escucharBrujula() {
+  if (brujulaLista) return; brujulaLista = true;
+  const h = e => {
+    let d = null;
+    if (typeof e.webkitCompassHeading === 'number') d = e.webkitCompassHeading;            // iPhone
+    else if (e.absolute && typeof e.alpha === 'number') d = (360 - e.alpha) % 360;         // Android
+    if (d != null) { rumbo = d; actualizarCono(); }
+  };
+  if ('ondeviceorientationabsolute' in window) window.addEventListener('deviceorientationabsolute', h);
+  else window.addEventListener('deviceorientation', h);
+}
+function permisoBrujula() {   // iPhone pide permiso para la brújula; solo se puede pedir al tocar un botón
+  try {
+    if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function')
+      DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') escucharBrujula(); }).catch(() => {});
+    else escucharBrujula();
+  } catch (e) {}
+}
+function vigilarGPS() {   // mantiene el punto azul al día (no cambia la recogida ya fijada)
+  if (vigilando || !navigator.geolocation) return; vigilando = true;
+  navigator.geolocation.watchPosition(pos => {
+    const c = pos.coords;
+    if (typeof c.heading === 'number' && !isNaN(c.heading) && c.speed > 1) rumbo = c.heading;
+    pintarPuntoAzul({ lat: c.latitude, lon: c.longitude, precision: c.accuracy });
+  }, () => {}, { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 });
+}
+function pedirGPS(automatico, precisionAlta = true) {
+  const btn = $('btnGps');
+  if (!navigator.geolocation || !window.isSecureContext) {
+    estadoGPS = 'falló'; pintarFilas();
+    if (!automatico) mostrarMensaje('Este navegador no permite usar el GPS aquí. Mueve el mapa o escribe tu dirección.');
+    return;
+  }
+  btn.disabled = true; btn.classList.add('buscando');
+  if (!puntos.origen) { estadoGPS = 'buscando'; pintarFilas(); }
+  if (!automatico) mostrarMensaje('Buscando tu ubicación… si el celular pregunta, toca "Permitir".', 'info');
+  navigator.geolocation.getCurrentPosition(pos => {
+    btn.disabled = false; btn.classList.remove('buscando');
+    estadoGPS = 'ok';
+    const p = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+    pintarPuntoAzul({ ...p, precision: pos.coords.accuracy });
+    vigilarGPS();
+    mostrarMensaje('');
+    if (modoPin) { centrar(p, Math.max(mapa ? mapa.getZoom() : 17, 17)); return; }   // en modo pin: lleva el marcador a tu ubicación
+    if (automatico && puntos.origen && !puntos.origen.gps) { pintarFilas(); return; } // ya marcó otra recogida a mano
+    fijarPunto('origen', { ...p, nombre: `Mi ubicación (${coordTxt(p)})`, gps: true });
+    if (!puntos.destino) centrar(p, 16);
+    ponerNombre('origen', p, ' (GPS)');
+  }, err => {
+    // Si la señal precisa no llega (bajo techo), reintenta con la ubicación aproximada por red.
+    if (precisionAlta && err.code !== 1) { pedirGPS(automatico, false); return; }
+    btn.disabled = false; btn.classList.remove('buscando');
+    estadoGPS = 'falló'; pintarFilas();
+    const m = { 1: avisoPermisoGPS(),
+                2: 'No se encontró tu ubicación. Revisa que la ubicación del celular esté encendida, o mueve el mapa hasta donde te recogemos.',
+                3: 'El GPS tardó demasiado. Toca el botón de ubicación otra vez o mueve el mapa hasta donde te recogemos.' };
+    mostrarMensaje(m[err.code] || m[2]);
+  }, precisionAlta ? { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+                   : { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
 }
 
 /* ---------------- Cotización ---------------- */
@@ -491,18 +786,21 @@ function tarifaFija() {
   return null;
 }
 function mostrarCotizacion(r, calculando) {
-  const t = calcularTarifaKm(r.kmViaje, r.kmIda, r.kmRegreso, new Date());
+  const t = calcularTarifaKm(r.kmViaje, r.kmIda, r.kmRegreso, new Date(), r.minViaje);
   const fija = tarifaFija(), total = fija ? fija.precio : t.total;
   const el = $('precio'); el.textContent = `${calculando ? '≈ ' : ''}$${total} MXN`; el.classList.toggle('calc', !!calculando);
   const partes = [`${r.kmViaje.toFixed(1)} km`, `~${Math.max(1, Math.round(r.minViaje))} min de viaje`,
                   `el taxi llega en ~${Math.max(3, Math.round(r.minIda) + 2)} min`];
   const extra = [];
   if (fija) extra.push(`tarifa fija ${fija.lugar}`);
-  else { if (t.kmVacio > 0) extra.push(`incluye ${t.kmVacio.toFixed(1)} km de traslado fuera de la ciudad`);
+  else { if (t.kmVacio > 0 && TARIFA.PRECIO_KM_VACIO > 0) extra.push(`incluye ${t.kmVacio.toFixed(1)} km de traslado fuera de la ciudad`);
          if (t.nocturno) extra.push(`incluye ${Math.round(TARIFA.RECARGO_NOCTURNO * 100)} % nocturno`); }
   if (calculando) extra.push('calculando ruta…'); else if (r.aproximado) extra.push('distancia aproximada');
   $('detalle').textContent = partes.join(' · ') + (extra.length ? ' — ' + extra.join(' · ') : '');
+  $('resumen').textContent = `${calculando ? '≈ ' : ''}$${total} MXN · ` + partes.join(' · ') + (t.nocturno && !fija ? ' · nocturna' : '');
+  $('resumen').style.display = 'block';
   cotizacion = { total, kmViaje: r.kmViaje, minViaje: r.minViaje, nocturno: t.nocturno && !fija, aproximado: r.aproximado || calculando };
+  pintarBoton();
 }
 async function recalcular() {
   const n = ++folio, o = puntos.origen, d = puntos.destino;
@@ -510,7 +808,8 @@ async function recalcular() {
   dibujar(null, null, null);
   if (!o || !d) {
     $('precio').textContent = '—'; $('precio').classList.remove('calc');
-    $('detalle').textContent = !d ? 'Elige tu destino para ver el precio.' : 'Falta dónde te recogemos (GPS, escribe o toca el mapa).';
+    $('detalle').textContent = !d ? 'Elige tu destino para ver el precio.' : 'Falta dónde te recogemos.';
+    $('resumen').style.display = 'none'; pintarBoton();
     return;
   }
   const clave = [o.lat, o.lon, d.lat, d.lon].map(x => x.toFixed(5)).join(',');
@@ -531,25 +830,46 @@ async function recalcular() {
 const linkMapa = p => `https://www.google.com/maps?q=${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;  // solo un enlace, no usa Google en la página
 function pedir() {
   const o = puntos.origen, d = puntos.destino;
-  const tOrigen = $('origen').value.trim(), tDestino = $('destino').value.trim();
-  if (!o && !tOrigen) {
-    mostrarMensaje('Dinos dónde te recogemos: toca 🛰️ GPS, escribe tu dirección o toca el mapa.');
-    $('origen').focus(); return;
-  }
+  if (!o) { mostrarMensaje('Primero marca dónde te recogemos.', 'info'); entrarPin('origen'); return; }
   const nombre = $('nombre').value.trim(), ref = $('referencia').value.trim();
   try { localStorage.setItem('taxiPeroteDatos', JSON.stringify({ nombre, ref })); } catch (e) {}
   const lineas = ['Hola Central TaxiPerote, necesito un taxi por favor:'];
   if (nombre) lineas.push(`🙋 Nombre: ${nombre}`);
-  lineas.push(`📍 Recogida: ${o ? o.nombre : tOrigen}`);
-  if (o) lineas.push(`   Mapa: ${linkMapa(o)}`);
+  lineas.push(`📍 Recogida: ${o.nombre}`);
+  lineas.push(`   Mapa: ${linkMapa(o)}`);
   if (ref) lineas.push(`🏠 Referencia: ${ref}`);
-  lineas.push(`🏁 Destino: ${d ? d.nombre : (tDestino || 'Lo indico al subir')}`);
+  lineas.push(`🏁 Destino: ${d ? d.nombre : 'Lo indico al subir'}`);
   if (d) lineas.push(`   Mapa: ${linkMapa(d)}`);
-  if (cotizacion) {
+  if (cotizacion && d) {
     const c = cotizacion;
     lineas.push(`💰 Tarifa estimada: $${c.total} MXN (${c.kmViaje.toFixed(1)} km, ~${Math.max(1, Math.round(c.minViaje))} min${c.nocturno ? ', nocturna' : ''}${c.aproximado ? ', aprox.' : ''})`);
   } else lineas.push('💰 Tarifa: por confirmar');
   location.href = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(lineas.join('\n'))}`;
+}
+function accionPrincipal() {
+  if (!puntos.origen) entrarPin('origen');
+  else if (!puntos.destino) entrarPin('destino');
+  else pedir();
+}
+
+/* ---------------- Panel: tocar o arrastrar la barrita para ver más ---------------- */
+function configurarAsa() {
+  const hoja = $('hoja'), asa = $('asa');
+  const alternar = abrir => {
+    if (modoPin) return;
+    hoja.classList.toggle('expandida', abrir === undefined ? !hoja.classList.contains('expandida') : abrir);
+    if (!hoja.classList.contains('expandida')) hoja.scrollTop = 0;
+  };
+  let y0 = null, movido = false;
+  asa.addEventListener('click', () => { if (!movido) alternar(); movido = false; });
+  asa.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); } });
+  asa.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; movido = false; }, { passive: true });
+  asa.addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    const dy = e.touches[0].clientY - y0;
+    if (Math.abs(dy) > 30) { movido = true; alternar(dy < 0); y0 = null; }
+  }, { passive: true });
+  asa.addEventListener('touchend', () => { y0 = null; setTimeout(() => { movido = false; }, 350); });
 }
 
 /* ---------------- Arranque ---------------- */
@@ -560,17 +880,26 @@ function iniciar() {
     b.addEventListener('click', () => fijarPunto('destino', { lat: l.lat, lon: l.lon, nombre: l.nombre }));
     chips.appendChild(b);
   });
-  configurarCampo('origen', 'sugOrigen');
-  configurarCampo('destino', 'sugDestino');
-  $('btnGps').addEventListener('click', () => pedirGPS(false));
-  $('btnPedir').addEventListener('click', pedir);
+  configurarBusquedaPin();
+  configurarAsa();
+  $('filaOrigen').addEventListener('click', () => entrarPin('origen'));
+  $('filaDestino').addEventListener('click', () => entrarPin('destino'));
+  $('btnPedir').addEventListener('click', accionPrincipal);
+  $('btnSinDestino').addEventListener('click', pedir);
+  $('btnConfirmar').addEventListener('click', confirmarPin);
+  $('btnAtras').addEventListener('click', salirPin);
+  $('cerrarMensaje').addEventListener('click', () => mostrarMensaje(''));
+  $('btnGps').addEventListener('click', () => { permisoBrujula(); pedirGPS(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modoPin && document.activeElement !== $('pinInput')) salirPin(); });
   try { const g = JSON.parse(localStorage.getItem('taxiPeroteDatos') || '{}');
         if (g.nombre) $('nombre').value = g.nombre; if (g.ref) $('referencia').value = g.ref; } catch (e) {}
-  botonesLimpiar();
-  // En computadora enfocamos el destino; en celular no, para que el teclado no tape los botones rápidos.
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) $('destino').focus();
-  pedirGPS(true);
+  pintarFilas();
   iniciarMapa();
+  if (window.ResizeObserver) new ResizeObserver(acomodarPin).observe($('hoja'));
+  window.addEventListener('resize', acomodarPin);
+  acomodarPin();
+  if (!(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function')) escucharBrujula();
+  pedirGPS(true);
   window.addEventListener('offline', () => mostrarMensaje('Sin internet. Puedes pedir por WhatsApp cuando vuelva la señal.'));
   window.addEventListener('online', () => { mostrarMensaje(''); recalcular(); });
 }
