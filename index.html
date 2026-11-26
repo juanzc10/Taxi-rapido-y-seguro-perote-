@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1C1C1E">
-<meta name="description" content="Pide tu taxi en Perote por WhatsApp con tarifa estimada al momento.">
-<title>TaxiPerote · Pide tu taxi</title>
+<meta name="description" content="Taxi seguro en Perote: unidades monitoreadas por la central. Pide por WhatsApp con tarifa estimada al momento.">
+<title>TaxiPerote · Taxi seguro en Perote</title>
 <meta property="og:type" content="website">
-<meta property="og:title" content="TaxiPerote · Pide tu taxi en Perote">
-<meta property="og:description" content="Pide tu taxi por WhatsApp con tarifa estimada al momento.">
+<meta property="og:title" content="TaxiPerote · Taxi seguro en Perote">
+<meta property="og:description" content="Taxi seguro: unidades monitoreadas por la central. Pide por WhatsApp con tarifa estimada.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚖%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -90,6 +90,7 @@ button{font:inherit;color:inherit}
 .ico-d{width:12px;height:12px;background:#fff;flex:0 0 auto}
 .fila .lupa{color:var(--txt2);display:flex}
 .fila .lupa svg{width:20px;height:20px}
+.seguro{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 12px;border-radius:12px;background:rgba(52,199,89,.12);color:#9BE7AE;font-size:.82rem;line-height:1.25}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 0;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;background:var(--campo);border:1px solid var(--borde);border-radius:20px;padding:0 14px;min-height:40px;font-size:.9rem;cursor:pointer}
@@ -172,6 +173,7 @@ button{font:inherit;color:inherit}
         <span class="lupa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span>
       </button>
     </div>
+    <div class="seguro">🛡️ <span><b>Taxi seguro</b> · unidades monitoreadas por la central</span></div>
     <div class="chips" id="chips"></div>
     <div class="resumen" id="resumen"></div>
 
@@ -183,6 +185,7 @@ button{font:inherit;color:inherit}
       </div>
       <div class="campo"><span>🙋</span><input id="nombre" type="text" autocomplete="name" placeholder="Tu nombre (opcional)" maxlength="60"></div>
       <div class="campo"><span>🏠</span><input id="referencia" type="text" placeholder="Referencia: casa azul, frente a la tienda…" maxlength="120"></div>
+      <button type="button" class="btn-sec" id="btnCompartir">📤 Compartir mi viaje con un familiar</button>
       <button type="button" class="btn-sec" id="btnSinDestino">💬 Pedir sin indicar destino</button>
       <p class="creditos">Mapa gratuito · OpenStreetMap</p>
     </div>
@@ -839,7 +842,7 @@ function pedir() {
   if (!o) { mostrarMensaje('Primero marca dónde te recogemos.', 'info'); entrarPin('origen'); return; }
   const nombre = $('nombre').value.trim(), ref = $('referencia').value.trim();
   try { localStorage.setItem('taxiPeroteDatos', JSON.stringify({ nombre, ref })); } catch (e) {}
-  const lineas = ['Hola Central TaxiPerote, necesito un taxi por favor:'];
+  const lineas = ['Hola Central TaxiPerote, necesito un taxi por favor:', '🛡️ Servicio de taxi seguro (unidades monitoreadas)'];
   if (nombre) lineas.push(`🙋 Nombre: ${nombre}`);
   lineas.push(`📍 Recogida: ${o.nombre}`);
   lineas.push(`   Mapa: ${linkMapa(o)}`);
@@ -858,6 +861,18 @@ function pedir() {
   if (cotizacion && d) datos.tarifa = cotizacion.total;
   const registro = window.registrarPedido ? window.registrarPedido(datos).catch(() => {}) : Promise.resolve();
   Promise.race([registro, esperar(2000)]).then(() => { location.href = url; });
+}
+// Compartir el viaje: abre WhatsApp para elegir a quién enviarlo (familiar o amigo).
+function compartirViaje() {
+  const o = puntos.origen, d = puntos.destino;
+  if (!o) { mostrarMensaje('Primero marca dónde te recogemos.', 'info'); return; }
+  const nombre = $('nombre').value.trim();
+  const l = [`🚖 ${nombre ? nombre + ' va' : 'Voy'} en un TaxiPerote (taxi seguro, monitoreado por la central).`,
+             `📍 Recogida: ${o.nombre}`, `   ${linkMapa(o)}`,
+             `🏁 Destino: ${d ? d.nombre : 'por indicar'}`];
+  if (d) l.push(`   ${linkMapa(d)}`);
+  l.push(`🕒 ${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`);
+  window.open(`https://wa.me/?text=${encodeURIComponent(l.join('\n'))}`, '_blank', 'noopener');
 }
 function accionPrincipal() {
   if (!puntos.origen) entrarPin('origen');
@@ -899,6 +914,7 @@ function iniciar() {
   $('filaDestino').addEventListener('click', () => entrarPin('destino'));
   $('btnPedir').addEventListener('click', accionPrincipal);
   $('btnSinDestino').addEventListener('click', pedir);
+  $('btnCompartir').addEventListener('click', compartirViaje);
   $('btnConfirmar').addEventListener('click', confirmarPin);
   $('btnAtras').addEventListener('click', salirPin);
   $('cerrarMensaje').addEventListener('click', () => mostrarMensaje(''));
