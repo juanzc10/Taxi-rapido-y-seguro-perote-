@@ -1,8 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
-  // CAMBIA estos correos por los de tu central (solo ellos pueden ver y editar pedidos).
+  // Correos de la central (solo ellos pueden ver y editar pedidos). Agrega más separados por coma.
   function esCentral() {
-    return request.auth != null && request.auth.token.email in ['central@tucorreo.com'];
+    return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email in ['zavaletacruzadojuandedios@gmail.com'];
   }
 
   match /databases/{database}/documents {
