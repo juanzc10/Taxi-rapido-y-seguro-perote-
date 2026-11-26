@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  // CAMBIA estos correos por los de tu central (solo ellos pueden ver y editar pedidos).
+  function esCentral() {
+    return request.auth != null && request.auth.token.email in ['central@tucorreo.com'];
+  }
+
+  match /databases/{database}/documents {
+    match /pedidos/{id} {
+      // Cualquier cliente puede crear un pedido nuevo, con campos limitados y siempre "pendiente".
+      allow create: if request.resource.data.keys().hasOnly(
+          ['nombre','recogida','recogidaLat','recogidaLon','referencia','destino','destinoLat','destinoLon','tarifa','estado','creado'])
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.creado == request.time
+        && request.resource.data.recogida is string && request.resource.data.recogida.size() < 300
+        && (!('nombre' in request.resource.data) || request.resource.data.nombre.size() < 80)
+        && (!('referencia' in request.resource.data) || request.resource.data.referencia.size() < 200);
+      // Solo la central (correos de la lista) puede ver y cambiar pedidos.
+      allow read, update: if esCentral();
+      allow delete: if false;
+    }
+  }
+}
