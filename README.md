@@ -25,3 +25,6 @@ GitHub Pages: Settings › Pages › rama principal, carpeta raíz.
 6. Abre `central.html`, entra con ese correo y deja la pestaña abierta: cada pedido nuevo suena y aparece al instante.
 
 Sin configurar Firebase, la app sigue funcionando: el pedido solo llega por WhatsApp.
+
+## Instalar en el celular
+Abre la página en Chrome/Safari › menú › "Agregar a pantalla de inicio". Abre a pantalla completa y carga más rápido (manifest + service worker).
