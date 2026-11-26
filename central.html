@@ -44,9 +44,7 @@ input{background:var(--card);border:1px solid var(--borde);border-radius:10px;pa
 
 <section id="vistaLogin" class="login" hidden>
   <h1>🚖 Central TaxiPerote</h1>
-  <input id="correo" type="email" placeholder="Correo" autocomplete="username">
-  <input id="clave" type="password" placeholder="Contraseña" autocomplete="current-password">
-  <button class="btn p" id="btnEntrar">Entrar</button>
+  <button class="btn p" id="btnEntrar">Entrar con Google</button>
   <p id="errLogin" style="color:#FFC9C5;font-size:.9rem"></p>
 </section>
 
@@ -74,13 +72,12 @@ else init();
 
 async function init() {
   f = await fb();
-  const { onAuthStateChanged, signInWithEmailAndPassword, signOut } = f.au;
+  const { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } = f.au;
   $('btnEntrar').onclick = async () => {
     $('errLogin').textContent = '';
-    try { await signInWithEmailAndPassword(f.auth, $('correo').value.trim(), $('clave').value); }
-    catch (e) { $('errLogin').textContent = 'Correo o contraseña incorrectos.'; }
+    try { await signInWithPopup(f.auth, new GoogleAuthProvider()); }
+    catch (e) { $('errLogin').textContent = 'No se pudo iniciar sesión: ' + (e.code || e.message); }
   };
-  $('clave').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnEntrar').click(); });
   $('btnSalir').onclick = () => signOut(f.auth);
   $('btnSonido').onclick = () => { sonido = !sonido; $('btnSonido').textContent = '🔔 Sonido: ' + (sonido ? 'sí' : 'no'); if (sonido) pitido(); };
   FILTROS.forEach(([k, t]) => { const b = document.createElement('button'); b.className = 'btn'; b.textContent = t; b.dataset.k = k; b.onclick = () => { filtro = k; pintar(); }; $('tabs').appendChild(b); });

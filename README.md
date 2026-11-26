@@ -19,10 +19,10 @@ GitHub Pages: Settings › Pages › rama principal, carpeta raíz.
 ## Activar el panel de central (Firebase, plan gratis)
 1. Crea un proyecto en https://console.firebase.google.com y una app **Web**; copia su configuración en `firebase-config.js`.
 2. Build › **Firestore Database** › crear base de datos (modo producción).
-3. Build › **Authentication** › Sign-in method › activa **Correo/contraseña** y crea el usuario de la central (Users › Add user).
-4. En `firestore.rules` pon el correo de la central en `esCentral()` y pega todo en Firestore › Reglas › Publicar.
+3. Build › **Authentication** › Sign-in method › activa **Google**. La central entra con su cuenta de Google.
+4. En `firestore.rules` pon los correos de la central en `esCentral()` y pega todo en Firestore › Reglas › Publicar.
 5. Authentication › Settings › Authorized domains: agrega el dominio donde publiques la app (p. ej. `juanzc10.github.io`).
-6. Abre `central.html`, entra con ese correo y deja la pestaña abierta: cada pedido nuevo suena y aparece al instante.
+6. Abre `central.html`, entra con Google con ese correo y deja la pestaña abierta: cada pedido nuevo suena y aparece al instante.
 
 Sin configurar Firebase, la app sigue funcionando: el pedido solo llega por WhatsApp.
 
