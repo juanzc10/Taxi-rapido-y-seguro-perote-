@@ -1,402 +1,160 @@
 <!DOCTYPE html>
 <html lang="es-MX">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#1C1C1E">
-    <title>TaxiPerote · Pide tu taxi (versión básica)</title>
-    <meta name="description" content="Pide tu taxi en Perote por WhatsApp con tarifa estimada.">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <style>
-        :root {
-            --primary: #0B3D91;
-            --whatsapp: #25D366;
-            --whatsapp-dark: #1EBE57;
-            --gps-btn: #0A84FF;
-            --bg: #1C1C1E;
-            --card: #2C2C2E;
-            --text: #FFFFFF;
-            --text-secondary: #8E8E93;
-            --border: #38383A;
-            --suggestion-bg: #3A3A3C;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        .floating-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--card);
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            padding: 24px 16px 32px 16px;
-            box-shadow: 0 -8px 25px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .panel-header h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #FFF;
-        }
-
-        .btn-gps {
-            background-color: rgba(10, 132, 255, 0.15);
-            color: var(--gps-btn);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .route-box {
-            background: #1C1C1E;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-
-        .route-input-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-        }
-
-        .route-icon {
-            font-size: 1rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .route-input-group input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            color: var(--text);
-            outline: none;
-        }
-
-        .route-input-group input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .route-divider {
-            height: 1px;
-            background-color: var(--border);
-            margin-left: 36px;
-        }
-
-        /* Lista de sugerencias desplegables estilo Uber */
-        .suggestions-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: var(--suggestion-bg);
-            border-radius: 12px;
-            margin-top: 6px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 100;
-            max-height: 180px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .suggestion-item {
-            padding: 10px 14px;
-            font-size: 0.9rem;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            color: #FFF;
-        }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-
-        .suggestion-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .fare-box {
-            background: #1C1C1E;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .fare-box span {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .fare-box strong {
-            font-size: 1.5rem;
-            color: #34C759;
-        }
-
-        .btn-whatsapp {
-            background-color: var(--whatsapp);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .btn-whatsapp:hover {
-            background-color: var(--whatsapp-dark);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1C1C1E">
+<meta name="robots" content="noindex">
+<title>Central TaxiPerote</title>
+<style>
+:root{--bg:#1C1C1E;--card:#2C2C2E;--borde:#38383A;--txt:#fff;--txt2:#8E8E93;--verde:#34C759;--azul:#0A84FF;--rojo:#FF453A;--amar:#FFD60A}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{background:var(--bg);color:var(--txt);padding:12px;max-width:900px;margin:0 auto}
+[hidden]{display:none!important}
+h1{font-size:1.3rem}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+button,input{font:inherit;color:inherit}
+.btn{border:none;border-radius:10px;padding:10px 14px;background:#3A3A3C;cursor:pointer;min-height:42px}
+.btn.p{background:var(--azul)}.btn.v{background:var(--verde);color:#000}.btn.r{background:#5a2623}
+input{background:var(--card);border:1px solid var(--borde);border-radius:10px;padding:10px 12px;width:100%}
+.login{max-width:340px;margin:60px auto;display:flex;flex-direction:column;gap:10px}
+.aviso{background:#3A1E1C;color:#FFC9C5;border-radius:12px;padding:14px;margin:12px 0;line-height:1.4}
+.res{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.res div{background:var(--card);border-radius:12px;padding:10px 14px;flex:1;min-width:120px}
+.res small{color:var(--txt2);display:block}.res b{font-size:1.3rem}
+.tabs{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto}
+.tabs .btn.act{background:var(--azul)}
+.pedido{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border-left:5px solid var(--amar)}
+.pedido.asignado{border-color:var(--azul)}.pedido.encamino{border-color:#BF5AF2}.pedido.terminado{border-color:var(--verde)}.pedido.cancelado{border-color:var(--rojo);opacity:.7}
+.pedido.nuevo{animation:pulso 1s 3}
+@keyframes pulso{50%{background:#4a4420}}
+.fila{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.hora{color:var(--txt2);font-size:.85rem}.tarifa{color:var(--verde);font-weight:700;font-size:1.2rem}
+.dato{margin-top:6px;line-height:1.35}.dato small{color:var(--txt2);display:block;font-size:.72rem}
+.dato a{color:#8EC5FF}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.acciones input{flex:1;min-width:140px}
+.vacio{color:var(--txt2);text-align:center;padding:40px 0}
+</style>
 </head>
 <body>
+<section id="vistaConfig" class="aviso" hidden>
+  Falta configurar Firebase. Pega los datos de tu proyecto en <b>firebase-config.js</b> (pasos en el README).
+</section>
 
-    <div id="map"></div>
+<section id="vistaLogin" class="login" hidden>
+  <h1>🚖 Central TaxiPerote</h1>
+  <input id="correo" type="email" placeholder="Correo" autocomplete="username">
+  <input id="clave" type="password" placeholder="Contraseña" autocomplete="current-password">
+  <button class="btn p" id="btnEntrar">Entrar</button>
+  <p id="errLogin" style="color:#FFC9C5;font-size:.9rem"></p>
+</section>
 
-    <div class="floating-panel">
-        <div class="panel-header">
-            <h1>🚖 TaxiPerote</h1>
-            <button type="button" class="btn-gps" onclick="obtenerUbicacionGPS()">
-                🛰️ Usar GPS
-            </button>
-        </div>
+<section id="vistaPanel" hidden>
+  <header><h1>🚖 Central TaxiPerote</h1><div><button class="btn" id="btnSonido">🔔 Sonido: sí</button> <button class="btn" id="btnSalir">Salir</button></div></header>
+  <div class="res">
+    <div><small>Pendientes</small><b id="rPend">0</b></div>
+    <div><small>Terminados hoy</small><b id="rTerm">0</b></div>
+    <div><small>Cobrado hoy</small><b id="rTotal">$0</b></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div id="lista"></div>
+</section>
 
-        <div class="route-box">
-            <div class="route-input-group">
-                <span class="route-icon">📍</span>
-                <input type="text" id="origen" placeholder="¿Dónde estás? (Calle o referencias)" oninput="manejarInputOrigen()">
-                <div id="sugerenciasOrigen" class="suggestions-list"></div>
-            </div>
-            <div class="route-divider"></div>
-            <div class="route-input-group">
-                <span class="route-icon">🏁</span>
-                <input type="text" id="destino" placeholder="¿A dónde vas? (Comunidad o calle)" oninput="manejarInputDestino()">
-                <div id="sugerenciasDestino" class="suggestions-list"></div>
-            </div>
-        </div>
+<script type="module">
+import { fb } from './firebase-lib.js';
+import { firebaseListo } from './firebase-config.js';
+const $ = id => document.getElementById(id);
+const ESTADOS = { pendiente: 'Pendiente', asignado: 'Asignado', encamino: 'En camino', terminado: 'Terminado', cancelado: 'Cancelado' };
+const FILTROS = [['activos', 'Activos'], ['terminado', 'Terminados'], ['cancelado', 'Cancelados'], ['todos', 'Todos']];
+let filtro = 'activos', pedidos = [], sonido = true, primera = true, conocidos = new Set(), f = null;
 
-        <div class="fare-box">
-            <span>Tarifa Estimada</span>
-            <strong id="precioDisplay">$40 MXN</strong>
-        </div>
+if (!firebaseListo()) { $('vistaConfig').hidden = false; }
+else init();
 
-        <button type="button" class="btn-whatsapp" onclick="enviarWhatsApp()">
-            💬 Pedir Taxi por WhatsApp
-        </button>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        const map = L.map('map', {zoomControl: false}).setView([19.5694, -97.2472], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        let marker = L.marker([19.5694, -97.2472]).addTo(map)
-            .bindPopup('<b>TaxiPerote Base</b>').openPopup();
-
-        // Base de datos de lugares y comunidades frecuentes en Perote
-        const lugaresPerote = [
-            "Centro de Perote, Parque Juárez",
-            "Terminal de Autobuses Perote",
-            "Hospital General Perote",
-            "Fortaleza de San Carlos",
-            "Calle Francisco I. Madero",
-            "Avenida Ferrocarril",
-            "Calle Hermenegildo Galeana",
-            "Colonia Centro",
-            "Colonia Obrera",
-            "El Sabinal",
-            "Totalco",
-            "Sierra de Agua",
-            "Tenextepec",
-            "Los Molinos"
-        ];
-
-        function obtenerUbicacionGPS() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    
-                    map.setView([lat, lon], 16);
-                    marker.setLatLng([lat, lon])
-                          .bindPopup('<b>¡Ubicación GPS obtenida!</b>').openPopup();
-
-                    document.getElementById('origen').value = `GPS Coordenadas: (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-                    calcularTarifa();
-                }, () => {
-                    alert('No se pudo obtener la ubicación GPS. Escribe tu dirección manual.');
-                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
-            } else {
-                alert('Tu dispositivo no soporta geolocalización.');
-            }
-        }
-
-        function manejarInputOrigen() {
-            const val = document.getElementById('origen').value.toLowerCase();
-            const contenedor = document.getElementById('sugerenciasOrigen');
-            contenedor.innerHTML = '';
-            
-            if (val.length < 1) {
-                contenedor.style.display = 'none';
-                return;
-            }
-
-            const filtrados = lugaresPerote.filter(l => l.toLowerCase().includes(val));
-            if (filtrados.length > 0) {
-                contenedor.style.display = 'block';
-                filtrados.forEach(lugar => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerText = lugar;
-                    div.onclick = () => {
-                        document.getElementById('origen').value = lugar;
-                        contenedor.style.display = 'none';
-                        calcularTarifa();
-                    };
-                    contenedor.appendChild(div);
-                });
-            } else {
-                contenedor.style.display = 'none';
-            }
-            calcularTarifa();
-        }
-
-        function manejarInputDestino() {
-            const val = document.getElementById('destino').value.toLowerCase();
-            const contenedor = document.getElementById('sugerenciasDestino');
-            contenedor.innerHTML = '';
-            
-            if (val.length < 1) {
-                contenedor.style.display = 'none';
-                return;
-            }
-
-            const filtrados = lugaresPerote.filter(l => l.toLowerCase().includes(val));
-            if (filtrados.length > 0) {
-                contenedor.style.display = 'block';
-                filtrados.forEach(lugar => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerText = lugar;
-                    div.onclick = () => {
-                        document.getElementById('destino').value = lugar;
-                        contenedor.style.display = 'none';
-                        calcularTarifa();
-                    };
-                    contenedor.appendChild(div);
-                });
-            } else {
-                contenedor.style.display = 'none';
-            }
-            calcularTarifa();
-        }
-
-        function calcularTarifa() {
-            const destinoTexto = document.getElementById('destino').value.trim().toLowerCase();
-            let tarifa = 40; // Base local estándar
-
-            // Motor de tarifas robusto e intuitivo
-            if (destinoTexto.includes('totalco')) {
-                tarifa = 250;
-            } else if (destinoTexto.includes('sierra de agua') || destinoTexto.includes('sierra')) {
-                tarifa = 160;
-            } else if (destinoTexto.includes('tenextepec')) {
-                tarifa = 140;
-            } else if (destinoTexto.includes('los molinos') || destinoTexto.includes('molinos')) {
-                tarifa = 180;
-            } else if (destinoTexto.includes('hospital') || destinoTexto.includes('clínica') || destinoTexto.includes('periférica')) {
-                tarifa = 50;
-            } else {
-                tarifa = 40;
-            }
-
-            document.getElementById('precioDisplay').innerText = `$${tarifa} MXN`;
-            return tarifa;
-        }
-
-        function enviarWhatsApp() {
-            const origen = document.getElementById('origen').value.trim() || "No especificado";
-            const destino = document.getElementById('destino').value.trim() || "No especificado";
-            const tarifa = calcularTarifa();
-
-            // Sincronización automática con la central
-            const nuevoServicio = {
-                origen: origen,
-                destino: destino,
-                tarifa: `$${tarifa} MXN`,
-                tiempo: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            localStorage.setItem('taxiPeroteUltimoServicio', JSON.stringify(nuevoServicio));
-
-            // Mensaje para la central de WhatsApp
-            const mensaje = encodeURIComponent(`Hola Central TaxiPerote, necesito un servicio por favor:\n📍 Recogida: ${origen}\n🏁 Destino: ${destino}\n💰 Tarifa Cotizada: $${tarifa} MXN`);
-            const numeroWhatsApp = "522821073249";
-            
-            const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
-            window.location.href = url;
-        }
-    </script>
+async function init() {
+  f = await fb();
+  const { onAuthStateChanged, signInWithEmailAndPassword, signOut } = f.au;
+  $('btnEntrar').onclick = async () => {
+    $('errLogin').textContent = '';
+    try { await signInWithEmailAndPassword(f.auth, $('correo').value.trim(), $('clave').value); }
+    catch (e) { $('errLogin').textContent = 'Correo o contraseña incorrectos.'; }
+  };
+  $('clave').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnEntrar').click(); });
+  $('btnSalir').onclick = () => signOut(f.auth);
+  $('btnSonido').onclick = () => { sonido = !sonido; $('btnSonido').textContent = '🔔 Sonido: ' + (sonido ? 'sí' : 'no'); if (sonido) pitido(); };
+  FILTROS.forEach(([k, t]) => { const b = document.createElement('button'); b.className = 'btn'; b.textContent = t; b.dataset.k = k; b.onclick = () => { filtro = k; pintar(); }; $('tabs').appendChild(b); });
+  let baja = null;
+  onAuthStateChanged(f.auth, u => {
+    $('vistaLogin').hidden = !!u; $('vistaPanel').hidden = !u;
+    if (baja) { baja(); baja = null; }
+    if (u) baja = escuchar();
+  });
+}
+function escuchar() {
+  const { collection, query, orderBy, limit, onSnapshot } = f.fs;
+  primera = true; conocidos = new Set();
+  return onSnapshot(query(collection(f.db, 'pedidos'), orderBy('creado', 'desc'), limit(100)), snap => {
+    let nuevo = false;
+    pedidos = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }));
+    pedidos.forEach(p => { if (!conocidos.has(p.id)) { conocidos.add(p.id); if (!primera && p.estado === 'pendiente') { nuevo = true; p._nuevo = true; } } });
+    primera = false; pintar();
+    if (nuevo && sonido) pitido();
+  }, err => { const l = $('lista'); l.innerHTML = ''; const d = document.createElement('div'); d.className = 'aviso'; d.textContent = 'No se pudo leer los pedidos: ' + err.message; l.appendChild(d); });
+}
+function pitido() {
+  try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain();
+    o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.value = .2; o.start(); o.stop(a.currentTime + .4); } catch (e) {}
+}
+const hoy = d => d && d.toDate && d.toDate().toDateString() === new Date().toDateString();
+const mapa = (la, lo) => `https://www.google.com/maps?q=${la},${lo}`;
+function dato(padre, titulo, texto, lat, lon) {
+  const d = document.createElement('div'); d.className = 'dato';
+  const s = document.createElement('small'); s.textContent = titulo; d.appendChild(s);
+  d.appendChild(document.createTextNode(texto || '—'));
+  if (typeof lat === 'number' && typeof lon === 'number') { d.appendChild(document.createTextNode(' · ')); const a = document.createElement('a'); a.href = mapa(lat, lon); a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'ver mapa'; d.appendChild(a); }
+  padre.appendChild(d);
+}
+async function cambiar(p, estado) {
+  const { doc, updateDoc } = f.fs;
+  try { await updateDoc(doc(f.db, 'pedidos', p.id), { estado }); } catch (e) { alert('No se pudo actualizar: ' + e.message); }
+}
+async function guardarTaxista(p, valor) {
+  const { doc, updateDoc } = f.fs;
+  try { await updateDoc(doc(f.db, 'pedidos', p.id), { taxista: valor.trim().slice(0, 60) }); } catch (e) {}
+}
+function pintar() {
+  document.querySelectorAll('#tabs .btn').forEach(b => b.classList.toggle('act', b.dataset.k === filtro));
+  $('rPend').textContent = pedidos.filter(p => p.estado === 'pendiente').length;
+  const term = pedidos.filter(p => p.estado === 'terminado' && hoy(p.creado));
+  $('rTerm').textContent = term.length;
+  $('rTotal').textContent = '$' + term.reduce((s, p) => s + (Number(p.tarifa) || 0), 0);
+  const lista = pedidos.filter(p => filtro === 'todos' || (filtro === 'activos' ? ['pendiente', 'asignado', 'encamino'].includes(p.estado) : p.estado === filtro));
+  const cont = $('lista'); cont.innerHTML = '';
+  if (!lista.length) { const v = document.createElement('div'); v.className = 'vacio'; v.textContent = 'Sin pedidos'; cont.appendChild(v); return; }
+  lista.forEach(p => {
+    const c = document.createElement('div'); c.className = 'pedido ' + p.estado + (p._nuevo ? ' nuevo' : '');
+    const top = document.createElement('div'); top.className = 'fila';
+    const h = document.createElement('span'); h.className = 'hora';
+    h.textContent = (p.creado && p.creado.toDate ? p.creado.toDate().toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : 'ahora') + ' · ' + (ESTADOS[p.estado] || p.estado);
+    const t = document.createElement('span'); t.className = 'tarifa'; t.textContent = p.tarifa ? '$' + p.tarifa : 'tarifa por confirmar';
+    top.append(h, t); c.appendChild(top);
+    if (p.nombre) dato(c, 'CLIENTE', p.nombre);
+    dato(c, 'RECOGIDA', p.recogida, p.recogidaLat, p.recogidaLon);
+    if (p.referencia) dato(c, 'REFERENCIA', p.referencia);
+    dato(c, 'DESTINO', p.destino, p.destinoLat, p.destinoLon);
+    const ac = document.createElement('div'); ac.className = 'acciones';
+    const ti = document.createElement('input'); ti.placeholder = 'Taxista / unidad'; ti.value = p.taxista || ''; ti.maxLength = 60;
+    ti.onchange = () => guardarTaxista(p, ti.value);
+    ac.appendChild(ti);
+    const btn = (txt, cls, est) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.onclick = () => cambiar(p, est); ac.appendChild(b); };
+    if (p.estado === 'pendiente') btn('Asignar', 'p', 'asignado');
+    if (p.estado === 'asignado') btn('En camino', 'p', 'encamino');
+    if (p.estado === 'encamino' || p.estado === 'asignado') btn('Terminar', 'v', 'terminado');
+    if (['pendiente', 'asignado', 'encamino'].includes(p.estado)) btn('Cancelar', 'r', 'cancelado');
+    c.appendChild(ac); cont.appendChild(c);
+  });
+}
+</script>
 </body>
 </html>

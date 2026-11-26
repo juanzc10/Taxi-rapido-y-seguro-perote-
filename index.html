@@ -850,7 +850,14 @@ function pedir() {
     const c = cotizacion;
     lineas.push(`💰 Tarifa estimada: $${c.total} MXN (${c.kmViaje.toFixed(1)} km, ~${Math.max(1, Math.round(c.minViaje))} min${c.nocturno ? ', nocturna' : ''}${c.aproximado ? ', aprox.' : ''})`);
   } else lineas.push('💰 Tarifa: por confirmar');
-  location.href = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(lineas.join('\n'))}`;
+  const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(lineas.join('\n'))}`;
+  // Registra el pedido en la central (si Firebase está configurado); nunca retrasa más de 2 s.
+  const datos = { recogida: o.nombre, recogidaLat: o.lat, recogidaLon: o.lon, destino: d ? d.nombre : 'Lo indica al subir' };
+  if (nombre) datos.nombre = nombre; if (ref) datos.referencia = ref;
+  if (d) { datos.destinoLat = d.lat; datos.destinoLon = d.lon; }
+  if (cotizacion && d) datos.tarifa = cotizacion.total;
+  const registro = window.registrarPedido ? window.registrarPedido(datos).catch(() => {}) : Promise.resolve();
+  Promise.race([registro, esperar(2000)]).then(() => { location.href = url; });
 }
 function accionPrincipal() {
   if (!puntos.origen) entrarPin('origen');
@@ -911,6 +918,10 @@ function iniciar() {
 }
 // DOMContentLoaded llega después de cargar Leaflet (script "defer").
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
+</script>
+<script type="module">
+import { registrarPedido } from './firebase-lib.js';
+window.registrarPedido = registrarPedido;
 </script>
 </body>
 </html>
