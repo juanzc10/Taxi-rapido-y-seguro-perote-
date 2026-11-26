@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#1C1C1E">
-    <title>TaxiPerote · Pide tu taxi</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>TaxiPerote · Pide tu taxi (versión básica)</title>
+    <meta name="description" content="Pide tu taxi en Perote por WhatsApp con tarifa estimada.">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         :root {
             --primary: #0B3D91;
@@ -195,7 +196,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: lib8px;
+            gap: 8px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
             text-decoration: none;
@@ -243,7 +244,7 @@
         </button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const map = L.map('map', {zoomControl: false}).setView([19.5694, -97.2472], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -266,10 +267,10 @@
             "Colonia Centro",
             "Colonia Obrera",
             "El Sabinal",
-            "Totalco ($150)",
-            "Sierra de Agua ($90)",
-            "Tenextepec ($80)",
-            "Los Molinos ($100)"
+            "Totalco",
+            "Sierra de Agua",
+            "Tenextepec",
+            "Los Molinos"
         ];
 
         function obtenerUbicacionGPS() {
@@ -286,7 +287,7 @@
                     calcularTarifa();
                 }, () => {
                     alert('No se pudo obtener la ubicación GPS. Escribe tu dirección manual.');
-                }, { enableHighAccuracy: true });
+                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
             } else {
                 alert('Tu dispositivo no soporta geolocalización.');
             }
@@ -358,13 +359,13 @@
 
             // Motor de tarifas robusto e intuitivo
             if (destinoTexto.includes('totalco')) {
-                tarifa = 150;
+                tarifa = 250;
             } else if (destinoTexto.includes('sierra de agua') || destinoTexto.includes('sierra')) {
-                tarifa = 90;
+                tarifa = 160;
             } else if (destinoTexto.includes('tenextepec')) {
-                tarifa = 80;
+                tarifa = 140;
             } else if (destinoTexto.includes('los molinos') || destinoTexto.includes('molinos')) {
-                tarifa = 100;
+                tarifa = 180;
             } else if (destinoTexto.includes('hospital') || destinoTexto.includes('clínica') || destinoTexto.includes('periférica')) {
                 tarifa = 50;
             } else {
@@ -390,11 +391,11 @@
             localStorage.setItem('taxiPeroteUltimoServicio', JSON.stringify(nuevoServicio));
 
             // Mensaje para la central de WhatsApp
-            const mensaje = `Hola Central TaxiPerote, necesito un servicio por favor:%0A📍 Recogida: ${origen}%0A🏁 Destino: ${destino}%0A💰 Tarifa Cotizada: $${tarifa} MXN`;
+            const mensaje = encodeURIComponent(`Hola Central TaxiPerote, necesito un servicio por favor:\n📍 Recogida: ${origen}\n🏁 Destino: ${destino}\n💰 Tarifa Cotizada: $${tarifa} MXN`);
             const numeroWhatsApp = "522821073249";
             
             const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
-            window.open(url, '_blank');
+            window.location.href = url;
         }
     </script>
 </body>
