@@ -113,6 +113,10 @@ button{font:inherit;color:inherit}
 .campo:focus-within{border-color:var(--azul)}
 .campo input{flex:1;min-width:0;border:none;background:transparent;color:var(--txt);font-size:1rem;outline:none;padding:13px 0}
 .campo input::placeholder{color:var(--txt2)}
+.pago{display:flex;gap:8px;margin-top:10px}
+.pago button{flex:1;min-height:46px;border-radius:12px;border:1px solid var(--borde);background:var(--campo);color:#C7C7CC;font-size:.92rem;cursor:pointer;line-height:1.2}
+.pago button[aria-pressed="true"]{border-color:var(--verde);color:#fff;background:rgba(52,199,89,.14)}
+.pago-nota{font-size:.78rem;color:var(--txt2);margin-top:6px;line-height:1.3}
 .btn-sec{width:100%;min-height:46px;margin-top:10px;border-radius:12px;border:1px solid var(--borde);background:none;color:#C7C7CC;font-size:.92rem;cursor:pointer}
 .creditos{font-size:.7rem;color:var(--txt2);text-align:center;margin:10px 0 4px}
 .btn-principal{width:100%;min-height:56px;border:none;border-radius:14px;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
@@ -187,6 +191,11 @@ button{font:inherit;color:inherit}
       </div>
       <div class="campo"><span>🙋</span><input id="nombre" type="text" autocomplete="name" placeholder="Tu nombre (opcional)" maxlength="60"></div>
       <div class="campo"><span>🏠</span><input id="referencia" type="text" placeholder="Referencia: casa azul, frente a la tienda…" maxlength="120"></div>
+      <div class="pago" role="group" aria-label="Forma de pago">
+        <button type="button" id="pagoEfectivo" aria-pressed="true">💵 Efectivo</button>
+        <button type="button" id="pagoTarjeta" aria-pressed="false">💳 Tarjeta</button>
+      </div>
+      <div class="pago-nota" id="pagoNota" hidden>Te enviamos por WhatsApp un botón de pago seguro (Mercado Pago) con la tarifa estimada.</div>
       <button type="button" class="btn-sec" id="btnCompartir">📤 Compartir mi viaje con un familiar</button>
       <button type="button" class="btn-sec" id="btnSinDestino">💬 Pedir sin indicar destino</button>
       <p class="creditos">Mapa gratuito · OpenStreetMap</p>
@@ -845,6 +854,7 @@ function pedir() {
   const nombre = $('nombre').value.trim(), ref = $('referencia').value.trim();
   try { localStorage.setItem('taxiPeroteDatos', JSON.stringify({ nombre, ref })); } catch (e) {}
   const lineas = ['Hola Central TaxiPerote, necesito un taxi por favor:', '🛡️ Servicio de taxi seguro (unidades monitoreadas)'];
+  const conTarjeta = formaPago === 'tarjeta';
   if (nombre) lineas.push(`🙋 Nombre: ${nombre}`);
   lineas.push(`📍 Recogida: ${o.nombre}`);
   lineas.push(`   Mapa: ${linkMapa(o)}`);
@@ -855,6 +865,7 @@ function pedir() {
     const c = cotizacion;
     lineas.push(`💰 Tarifa estimada: $${c.total} MXN (${c.kmViaje.toFixed(1)} km, ~${Math.max(1, Math.round(c.minViaje))} min${c.nocturno ? ', nocturna' : ''}${c.aproximado ? ', aprox.' : ''})`);
   } else lineas.push('💰 Tarifa: por confirmar');
+  lineas.push(conTarjeta ? '💳 Pago: TARJETA (Mercado Pago) - enviar botón de pago' : '💵 Pago: Efectivo');
   const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(lineas.join('\n'))}`;
   // Registra el pedido en la central (si Firebase está configurado); nunca retrasa más de 2 s.
   const datos = { recogida: o.nombre, recogidaLat: o.lat, recogidaLon: o.lon, destino: d ? d.nombre : 'Lo indica al subir' };
@@ -863,6 +874,16 @@ function pedir() {
   if (cotizacion && d) datos.tarifa = cotizacion.total;
   const registro = window.registrarPedido ? window.registrarPedido(datos).catch(() => {}) : Promise.resolve();
   Promise.race([registro, esperar(2000)]).then(() => { location.href = url; });
+}
+// Forma de pago: efectivo o tarjeta (el bot de Jelou envía el botón de Mercado Pago por WhatsApp).
+let formaPago = 'efectivo';
+try { if (localStorage.getItem('taxiPerotePago') === 'tarjeta') formaPago = 'tarjeta'; } catch (e) {}
+function ponerPago(f) {
+  formaPago = f;
+  try { localStorage.setItem('taxiPerotePago', f); } catch (e) {}
+  $('pagoEfectivo').setAttribute('aria-pressed', f === 'efectivo');
+  $('pagoTarjeta').setAttribute('aria-pressed', f === 'tarjeta');
+  $('pagoNota').hidden = f !== 'tarjeta';
 }
 // Compartir el viaje: abre WhatsApp para elegir a quién enviarlo (familiar o amigo).
 function compartirViaje() {
@@ -917,6 +938,9 @@ function iniciar() {
   $('btnPedir').addEventListener('click', accionPrincipal);
   $('btnSinDestino').addEventListener('click', pedir);
   $('btnCompartir').addEventListener('click', compartirViaje);
+  $('pagoEfectivo').addEventListener('click', () => ponerPago('efectivo'));
+  $('pagoTarjeta').addEventListener('click', () => ponerPago('tarjeta'));
+  ponerPago(formaPago);
   $('btnConfirmar').addEventListener('click', confirmarPin);
   $('btnAtras').addEventListener('click', salirPin);
   $('cerrarMensaje').addEventListener('click', () => mostrarMensaje(''));
